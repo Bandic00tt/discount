@@ -6,7 +6,6 @@ use GuzzleHttp\Client;
 use GuzzleHttp\Cookie\CookieJar;
 use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\RequestOptions;
-use Psr\Http\Message\ResponseInterface;
 
 class ApiClient
 {
@@ -14,7 +13,7 @@ class ApiClient
     const DOMAIN = '.5ka.ru';
     const GET_DISCOUNTS_URL = '/api/v2/special_offers/';
     const RECORDS_PER_PAGE = 18; // Максимальное кол-во скидок, которое можно получить за 1 запрос
-    const LOCATION_ID = 8262; // Пока парсим только Новчик, масштабироваться будем позднее
+    const DEFAULT_LOCATION_ID = 8262; // Пока парсим только Новчик, масштабироваться будем позднее
 
     private Client $client;
 
@@ -33,7 +32,7 @@ class ApiClient
     public function getDiscounts(int $page = 1): string
     {
         try {
-            $cookies = ['location_id' => self::LOCATION_ID];
+            $cookies = ['location_id' => self::DEFAULT_LOCATION_ID];
             $cookieJar = CookieJar::fromArray($cookies, self::DOMAIN);
 
             $response = $this->client->get(self::SITE_URL . self::GET_DISCOUNTS_URL, [

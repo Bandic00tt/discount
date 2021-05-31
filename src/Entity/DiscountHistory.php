@@ -2,13 +2,13 @@
 
 namespace App\Entity;
 
-use App\Repository\DiscountRepository;
+use App\Repository\DiscountHistoryRepository;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
- * @ORM\Entity(repositoryClass=DiscountRepository::class)
+ * @ORM\Entity(repositoryClass=DiscountHistoryRepository::class)
  */
-class Discount
+class DiscountHistory
 {
     /**
      * @ORM\Id
@@ -26,16 +26,6 @@ class Discount
      * @ORM\Column(type="integer")
      */
     private $product_id;
-
-    /**
-     * @ORM\Column(type="string", length=512)
-     */
-    private $name;
-
-    /**
-     * @ORM\Column(type="text", nullable=true)
-     */
-    private $img_link;
 
     /**
      * @ORM\Column(type="integer")
@@ -87,30 +77,6 @@ class Discount
     public function setProductId(int $product_id): self
     {
         $this->product_id = $product_id;
-
-        return $this;
-    }
-
-    public function getName(): ?string
-    {
-        return $this->name;
-    }
-
-    public function setName(string $name): self
-    {
-        $this->name = $name;
-
-        return $this;
-    }
-
-    public function getImgLink(): ?string
-    {
-        return $this->img_link;
-    }
-
-    public function setImgLink(?string $img_link): self
-    {
-        $this->img_link = $img_link;
 
         return $this;
     }

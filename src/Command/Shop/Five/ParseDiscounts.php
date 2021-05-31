@@ -23,6 +23,10 @@ class ParseDiscounts extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
+        // Очищаем старые неактуальные данные
+        $this->dataHandler->clearDiscounts();
+
+        $results = [];
         $page = 1;
         while (true) {
             $data = json_decode(
@@ -35,19 +39,26 @@ class ParseDiscounts extends Command
                 break;
             }
 
-            $total = $this->dataHandler->saveDiscountData($data['results']);
+            $totalOnPage = count($data['results']);
+            $results = array_merge($results, $data['results']);
 
-            echo "Saved $total records on $page page\n";
+            echo "Got $totalOnPage records on $page page\n";
 
             ++$page;
 
             sleep(2);
         }
 
-        //$this->dataHandler->clearDiscountData();
+        // Сохраняем свежие данные по скидкам
+        $totalSaved = $this->dataHandler->updateDiscounts($results);
+        echo "Saved $totalSaved records from $page pages \n";
+        // Сохраняем товары для каталога (справочника)
+        $totalNew = $this->dataHandler->updateProducts($results);
+        echo "Saved $totalNew new products \n";
+        // Обновляем историю скидок
+        $totalHistory = $this->dataHandler->updateHistory($results);
+        echo "Saved $totalHistory history rows \n";
 
         return 0;
     }
-
-
 }
