@@ -26,7 +26,8 @@ class DataHandler
         foreach ($results as $result) {
             $entity = new Discount();
             $entity->setLocationId(ApiClient::DEFAULT_LOCATION_ID);
-            $entity->setProductId($result['id']);
+            $entity->setProductId($result['plu']);
+            $entity->setDiscountId($result['promo']['id']);
             $entity->setName($result['name']);
             $entity->setImgLink($result['img_link']);
             $entity->setDateBegin(strtotime($result['promo']['date_begin']));
@@ -65,14 +66,16 @@ class DataHandler
         $total = 0;
         $existingProductIds = $this->getExistingProductIds();
         foreach ($results as $result) {
-            if (in_array((int)$result['id'], $existingProductIds, true)) {
+            $productId = (int)$result['plu'];
+            if (in_array($productId, $existingProductIds, true)) {
                 continue;
             }
 
             $entity = new Product();
-            $entity->setProductId($result['id']);
+            $entity->setProductId($productId);
             $entity->setName($result['name']);
             $entity->setImgLink($result['img_link']);
+            $entity->setIsFavorited(false);
             $entity->setCreatedAt(time());
             $entity->setUpdatedAt(time());
 
@@ -87,7 +90,7 @@ class DataHandler
     }
 
     /**
-     * @return array
+     * @return int[]
      */
     private function getExistingProductIds(): array
     {
@@ -97,7 +100,7 @@ class DataHandler
             ->getQuery()
             ->getResult();
 
-        return array_map(function ($item) {
+        return array_map(function($item) {
             return (int)$item['product_id'];
         }, $res);
     }
@@ -109,10 +112,17 @@ class DataHandler
     public function updateHistory(array $results): int
     {
         $total = 0;
+        $existingDiscountIds = $this->getExistingDiscountIds();
         foreach ($results as $result) {
+            $discountId = (int)$result['promo']['id'];
+            if (in_array($discountId, $existingDiscountIds, true)) {
+                continue;
+            }
+
             $entity = new DiscountHistory();
             $entity->setLocationId(ApiClient::DEFAULT_LOCATION_ID);
-            $entity->setProductId($result['id']);
+            $entity->setProductId($result['plu']);
+            $entity->setDiscountId($discountId);
             $entity->setDateBegin(strtotime($result['promo']['date_begin']));
             $entity->setDateEnd(strtotime($result['promo']['date_end']));
             $entity->setPriceDiscount($result['current_prices']['price_promo__min']);
@@ -127,5 +137,21 @@ class DataHandler
         $this->em->clear();
 
         return $total;
+    }
+
+    /**
+     * @return int[]
+     */
+    private function getExistingDiscountIds(): array
+    {
+        $res = $this->em->createQueryBuilder()
+            ->select(['dh.discount_id'])
+            ->from(DiscountHistory::class, 'dh')
+            ->getQuery()
+            ->getResult();
+
+        return array_map(function($item) {
+            return (int)$item['discount_id'];
+        }, $res);
     }
 }

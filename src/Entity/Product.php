@@ -33,6 +33,11 @@ class Product
     private $img_link;
 
     /**
+     * @ORM\Column(type="boolean")
+     */
+    private $is_favorited;
+
+    /**
      * @ORM\Column(type="integer")
      */
     private $created_at;
@@ -79,6 +84,18 @@ class Product
     public function setImgLink(?string $img_link): self
     {
         $this->img_link = $img_link;
+
+        return $this;
+    }
+
+    public function getIsFavorited(): ?bool
+    {
+        return $this->is_favorited;
+    }
+
+    public function setIsFavorited(bool $is_favorited): self
+    {
+        $this->is_favorited = $is_favorited;
 
         return $this;
     }

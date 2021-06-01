@@ -28,6 +28,11 @@ class DiscountHistory
     private $product_id;
 
     /**
+     * @ORM\Column(type="bigint")
+     */
+    private $discount_id;
+
+    /**
      * @ORM\Column(type="integer")
      */
     private $date_begin;
@@ -77,6 +82,18 @@ class DiscountHistory
     public function setProductId(int $product_id): self
     {
         $this->product_id = $product_id;
+
+        return $this;
+    }
+
+    public function getDiscountId(): ?int
+    {
+        return $this->discount_id;
+    }
+
+    public function setDiscountId(int $discount_id): self
+    {
+        $this->discount_id = $discount_id;
 
         return $this;
     }
