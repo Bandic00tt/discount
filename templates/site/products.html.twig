@@ -2,6 +2,37 @@
 
 {% block body %}
     <h4>Welcome to the products page!</h4>
-    <a href="{{ path('index') }}">Index</a>
+
+    <div class="row">
+        {% set i = 1 %}
+        {% for product in products %}
+            <div class="col">
+                <div class="discount-wrapper" data-id="{{ product.productId }}">
+                    <div class="card" style="width: 20rem;">
+                        <img src="{{ product.imgLink }}" class="img-fluid" alt="{{ product.name }}">
+                        <div class="card-body" style="min-height: 100px;">
+                            {{ product.name }}
+                        </div>
+                        {% if product.isFavorited %}
+                            <div class="favorite text-warning">
+                                <i class="fa fa-star fa-2x"></i>
+                            </div>
+                        {% else %}
+                            <div class="favorite">
+                                <i class="fa fa-star-o fa-2x"></i>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            {% if i % 3 == 0 %}
+                </div>
+                <div class="row">
+            {% endif %}
+
+            {% set i = i + 1 %}
+        {% endfor %}
+    </div>
 
 {% endblock %}

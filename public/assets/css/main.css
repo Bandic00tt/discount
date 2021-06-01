@@ -1,0 +1,17 @@
+.discount-wrapper {
+    margin: 15px auto;
+}
+
+.discount-wrapper .card {
+    position: relative;
+}
+
+.discount-wrapper .card .favorite {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+}
+
+.discount-wrapper .card .favorite:hover {
+    cursor: pointer;
+}
