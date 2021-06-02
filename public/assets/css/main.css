@@ -15,3 +15,7 @@
 .discount-wrapper .card .favorite:hover {
     cursor: pointer;
 }
+
+.discount-cell:hover {
+    cursor: pointer;
+}

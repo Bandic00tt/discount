@@ -2,7 +2,10 @@
 namespace App\Controller;
 
 use App\Entity\Product;
+use App\Service\DateHelper;
+use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
+use Exception;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -59,4 +62,26 @@ class SiteController extends AbstractController
 
         return $this->json(['isFavorited' => $isFavorited]);
     }
+
+    /**
+     * @Route ("/activity", name="activity")
+     * @return Response
+     * @throws Exception
+     */
+    public function activity(): Response
+    {
+        $dateHelper = new DateHelper();
+        $dates = $dateHelper->getYearDatesRange(date('Y'));
+        $discountDates = $dateHelper->getDatesRange(
+            new DateTime('2021-05-01'),
+            new DateTime('2021-05-31')
+        );
+
+        return $this->render('/site/activity.html.twig', [
+            'dates' => $dates,
+            'discountDates' => $discountDates,
+        ]);
+    }
+
+
 }
