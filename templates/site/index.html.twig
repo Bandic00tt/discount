@@ -1,5 +1,49 @@
 {% extends 'base.html.twig' %}
 
 {% block body %}
-    <h4>Hello discount service!</h4>
+    {% for product in favoritedProducts %}
+        <div class="row">
+            <div class="col-lg-3">
+                <div class="discount-wrapper" data-id="{{ product.productId }}">
+                    <div class="card" style="width: 10rem;">
+                        <img src="{{ product.imgLink }}" class="img-fluid" alt="{{ product.name }}">
+                        <div class="card-body" style="min-height: 100px;">
+                            {{ product.name }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-9">
+                <div class="row">
+                    <div class="col text-center">Январь</div>
+                    <div class="col text-center">Февраль</div>
+                    <div class="col text-center">Март</div>
+                    <div class="col text-center">Апрель</div>
+                    <div class="col text-center">Май</div>
+                    <div class="col text-center">Июнь</div>
+                    <div class="col text-center">Июль</div>
+                    <div class="col text-center">Август</div>
+                    <div class="col text-center">Сентябрь</div>
+                    <div class="col text-center">Октябрь</div>
+                    <div class="col text-center">Ноябрь</div>
+                    <div class="col text-center">Декабрь</div>
+                </div>
+
+                {% set productDiscountDates = discountDates[product.productId] %}
+                <table class="table table-bordered">
+                    {% for weekDay in 1..7 %}
+                        <tr>
+                            {% for date in currentYearDates %}
+                                {% if date|date('N') == weekDay %}
+                                    <td class="{{ date in productDiscountDates ? 'discount-cell bg-warning' : 'empty-cell' }}" title="{{ date|date('d.m.Y') }}">
+
+                                    </td>
+                                {% endif %}
+                            {% endfor %}
+                        </tr>
+                    {% endfor %}
+                </table>
+            </div>
+        </div>
+    {% endfor %}
 {% endblock %}

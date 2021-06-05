@@ -19,7 +19,7 @@ class DateHelper
         $finish = new DateTime($year .'-12-31');
 
         return $this->completeDates(
-            $this->getDatesRange($start, $finish)
+            $this->getDatesFromRange($start, $finish)
         );
     }
 
@@ -28,7 +28,7 @@ class DateHelper
      * @param DateTime $finish
      * @return array
      */
-    public function getDatesRange(DateTime $start, DateTime $finish): array
+    public function getDatesFromRange(DateTime $start, DateTime $finish): array
     {
         $finish->modify('+1 day');
 

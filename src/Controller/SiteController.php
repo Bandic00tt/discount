@@ -3,6 +3,7 @@ namespace App\Controller;
 
 use App\Entity\Product;
 use App\Service\DateHelper;
+use App\Service\ProductHelper;
 use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
@@ -17,13 +18,23 @@ class SiteController extends AbstractController
 
     /**
      * @Route ("/", name="index")
+     * @param DateHelper $dateHelper
+     * @param ProductHelper $productHelper
      * @return Response
+     * @throws Exception
      */
-    public function index(): Response
+    public function index(DateHelper $dateHelper, ProductHelper $productHelper): Response
     {
+        $currentYearDates = $dateHelper->getYearDatesRange(date('Y'));
+        $favoritedProducts = $productHelper->getFavoritedProducts();
+        // todo: limit for current year
+        $discountDates = $productHelper->getDiscountDates($favoritedProducts);
 
-
-        return $this->render('/site/index.html.twig');
+        return $this->render('/site/index.html.twig', [
+            'currentYearDates' => $currentYearDates,
+            'favoritedProducts' => $favoritedProducts,
+            'discountDates' => $discountDates,
+        ]);
     }
 
     /**
@@ -72,7 +83,7 @@ class SiteController extends AbstractController
     {
         $dateHelper = new DateHelper();
         $dates = $dateHelper->getYearDatesRange(date('Y'));
-        $discountDates = $dateHelper->getDatesRange(
+        $discountDates = $dateHelper->getDatesFromRange(
             new DateTime('2021-05-01'),
             new DateTime('2021-05-31')
         );
