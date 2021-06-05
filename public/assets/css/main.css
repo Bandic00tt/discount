@@ -19,3 +19,17 @@
 .discount-cell:hover {
     cursor: pointer;
 }
+
+.favorited-product-wrapper {
+    position: relative;
+}
+
+.remove-from-favorites {
+    position: absolute;
+    top: 0;
+    right: 5px;
+}
+
+.remove-from-favorites:hover {
+    cursor: pointer;
+}

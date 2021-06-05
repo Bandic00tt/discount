@@ -4,13 +4,27 @@
     {% for product in favoritedProducts %}
         <div class="row">
             <div class="col-lg-3">
-                <div class="discount-wrapper" data-id="{{ product.productId }}">
-                    <div class="card" style="width: 10rem;">
-                        <img src="{{ product.imgLink }}" class="img-fluid" alt="{{ product.name }}">
-                        <div class="card-body" style="min-height: 100px;">
-                            {{ product.name }}
-                        </div>
-                    </div>
+                <div class="favorited-product-wrapper">
+                    <table class="table">
+                        <tr>
+                            <td style="min-width: 150px;">
+                                <img src="{{ product.imgLink }}" class="img-fluid" alt="{{ product.name }}">
+                            </td>
+                            <td>
+                                {{ product.name }}
+                            </td>
+                            <td>
+
+                            </td>
+                        </tr>
+                    </table>
+                    <a href="{{ path('remove_from_favorites', {'productId': product.productId}) }}"
+                       class="remove-from-favorites text-danger"
+                       title="Удалить из избранного"
+                       data-id="{{ product.productId }}"
+                    >
+                        <i class="fa fa-close"></i>
+                    </a>
                 </div>
             </div>
             <div class="col-lg-9">

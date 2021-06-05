@@ -8,7 +8,7 @@
         {% for product in products %}
             <div class="col">
                 <div class="discount-wrapper" data-id="{{ product.productId }}">
-                    <div class="card" style="width: 20rem;">
+                    <div class="card" style="width: 15rem;">
                         <img src="{{ product.imgLink }}" class="img-fluid" alt="{{ product.name }}">
                         <div class="card-body" style="min-height: 100px;">
                             {{ product.name }}
@@ -26,7 +26,7 @@
                 </div>
             </div>
 
-            {% if i % 3 == 0 %}
+            {% if i % 4 == 0 %}
                 </div>
                 <div class="row">
             {% endif %}

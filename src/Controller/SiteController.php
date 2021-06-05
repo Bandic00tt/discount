@@ -9,12 +9,19 @@ use Doctrine\ORM\EntityManagerInterface;
 use Exception;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
 class SiteController extends AbstractController
 {
+    private EntityManagerInterface $em;
+
+    public function __construct(EntityManagerInterface $em)
+    {
+        $this->em = $em;
+    }
 
     /**
      * @Route ("/", name="index")
@@ -38,6 +45,28 @@ class SiteController extends AbstractController
     }
 
     /**
+     * @Route ("/remove-from-favorites/{productId}", name="remove_from_favorites")
+     * @param Request $request
+     * @return RedirectResponse
+     */
+    public function removeFromFavorites(Request $request): RedirectResponse
+    {
+        $productId = $request->get('productId');
+
+        /** @var Product $product */
+        $product = $this->em->getRepository(Product::class)
+            ->findOneBy(['product_id' => $productId]);
+
+        $isFavorited = 0;
+
+        $product->setIsFavorited($isFavorited);
+        $this->em->flush();
+        $this->em->clear();
+
+        return $this->redirectToRoute('index');
+    }
+
+    /**
      * @Route ("/products", name="products")
      * @return Response
      */
@@ -53,28 +82,30 @@ class SiteController extends AbstractController
     }
 
     /**
+     * todo: rename
      * @Route ("/favorite-product", name="favoriteProduct")
-     * @param EntityManagerInterface $em
      * @param Request $request
      * @return JsonResponse
      */
-    public function favoriteProduct(EntityManagerInterface $em, Request $request): JsonResponse
+    public function favoriteProduct(Request $request): JsonResponse
     {
         $productId = $request->get('productId');
 
         /** @var Product $product */
-        $product = $em->getRepository(Product::class)
+        $product = $this->em->getRepository(Product::class)
             ->findOneBy(['product_id' => $productId]);
 
         $isFavorited = (int)$product->getIsFavorited() ^ 1;
 
         $product->setIsFavorited($isFavorited);
-        $em->flush();
+        $this->em->flush();
+        $this->em->clear();
 
         return $this->json(['isFavorited' => $isFavorited]);
     }
 
     /**
+     * todo: delete
      * @Route ("/activity", name="activity")
      * @return Response
      * @throws Exception
