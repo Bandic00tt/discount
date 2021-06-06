@@ -20,7 +20,7 @@
     cursor: pointer;
 }
 
-.favorited-product-wrapper {
+.favorited-product .product-item {
     position: relative;
 }
 
@@ -32,4 +32,17 @@
 
 .remove-from-favorites:hover {
     cursor: pointer;
+}
+
+.favorited-product .product-item .price-normal {
+    text-decoration: line-through;
+}
+
+.favorited-product .product-item .date-range {
+    font-size: 12px;
+}
+
+.history-months {
+    padding-top: 15px;
+    font-size: 14px;
 }

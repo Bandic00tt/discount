@@ -3,9 +3,11 @@ namespace App\Controller;
 
 use App\Entity\Product;
 use App\Service\DateHelper;
-use App\Service\ProductHelper;
+use App\Service\DiscountHelper;
 use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\NonUniqueResultException;
+use Doctrine\ORM\Query\QueryException;
 use Exception;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -17,29 +19,31 @@ use Symfony\Component\Routing\Annotation\Route;
 class SiteController extends AbstractController
 {
     private EntityManagerInterface $em;
+    private DiscountHelper $discountHelper;
 
-    public function __construct(EntityManagerInterface $em)
+    public function __construct(EntityManagerInterface $em, DiscountHelper $discountHelper)
     {
         $this->em = $em;
+        $this->discountHelper = $discountHelper;
     }
 
     /**
      * @Route ("/", name="index")
-     * @param DateHelper $dateHelper
-     * @param ProductHelper $productHelper
      * @return Response
-     * @throws Exception
+     * @throws QueryException
      */
-    public function index(DateHelper $dateHelper, ProductHelper $productHelper): Response
+    public function index(): Response
     {
-        $currentYearDates = $dateHelper->getYearDatesRange(date('Y'));
-        $favoritedProducts = $productHelper->getFavoritedProducts();
+        $currentYearDates = $this->discountHelper->dateHelper->getYearDatesRange(date('Y'));
+        $favoritedProducts = $this->discountHelper->getFavoritedProducts();
         // todo: limit for current year
-        $discountDates = $productHelper->getDiscountDates($favoritedProducts);
+        $discountDates = $this->discountHelper->getDiscountDates($favoritedProducts);
+        $productDiscounts = $this->discountHelper->getProductDiscounts($favoritedProducts);
 
         return $this->render('/site/index.html.twig', [
             'currentYearDates' => $currentYearDates,
             'favoritedProducts' => $favoritedProducts,
+            'productDiscounts' => $productDiscounts,
             'discountDates' => $discountDates,
         ]);
     }
@@ -67,6 +71,27 @@ class SiteController extends AbstractController
     }
 
     /**
+     * @Route ("/get-time-limited-discount-data", name="get_time_limited_discount_data")
+     * @param Request $request
+     * @return JsonResponse
+     * @throws NonUniqueResultException
+     */
+    public function getTimeLimitedDiscountData(Request $request): JsonResponse
+    {
+        $productId = $request->get('productId');
+        $discountDate = $request->get('discountDate');
+
+        $discountHistory = $this->discountHelper->getTimeLimitedDiscountData($productId, $discountDate);
+
+        return $this->json([
+            'priceDiscount' => $discountHistory->getPriceDiscount(),
+            'priceNormal' => $discountHistory->getPriceNormal(),
+            'dateBegin' => date('d.m.Y', $discountHistory->getDateBegin()),
+            'dateEnd' => date('d.m.Y', $discountHistory->getDateEnd()),
+        ]);
+    }
+
+    /**
      * @Route ("/products", name="products")
      * @return Response
      */
@@ -82,12 +107,11 @@ class SiteController extends AbstractController
     }
 
     /**
-     * todo: rename
-     * @Route ("/favorite-product", name="favoriteProduct")
+     * @Route ("/toggle-product-favorited-status", name="toggleProductFavoritedStatus", methods={"POST"})
      * @param Request $request
      * @return JsonResponse
      */
-    public function favoriteProduct(Request $request): JsonResponse
+    public function toggleProductFavoritedStatus(Request $request): JsonResponse
     {
         $productId = $request->get('productId');
 
@@ -103,27 +127,4 @@ class SiteController extends AbstractController
 
         return $this->json(['isFavorited' => $isFavorited]);
     }
-
-    /**
-     * todo: delete
-     * @Route ("/activity", name="activity")
-     * @return Response
-     * @throws Exception
-     */
-    public function activity(): Response
-    {
-        $dateHelper = new DateHelper();
-        $dates = $dateHelper->getYearDatesRange(date('Y'));
-        $discountDates = $dateHelper->getDatesFromRange(
-            new DateTime('2021-05-01'),
-            new DateTime('2021-05-31')
-        );
-
-        return $this->render('/site/activity.html.twig', [
-            'dates' => $dates,
-            'discountDates' => $discountDates,
-        ]);
-    }
-
-
 }
