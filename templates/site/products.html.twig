@@ -4,6 +4,30 @@
     <h4>Welcome to the products page!</h4>
 
     <div class="row">
+        <div class="col-6">
+            <form action="{{ path('products') }}" method="get" class="row">
+                <div class="col-8">
+                    <div class="input-group">
+                        <label for="search-query" class="visually-hidden"></label>
+                        <input type="text"
+                               name="q"
+                               class="form-control"
+                               id="search-query"
+                               placeholder="Найти продукт"
+                               value="{{ app.request.query.get('q') }}"
+                        >
+                    </div>
+                </div>
+                <div class="col-4">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fa fa-search"></i>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="row">
         {% set i = 1 %}
         {% for product in products %}
             <div class="col">

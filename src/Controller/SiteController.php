@@ -93,13 +93,24 @@ class SiteController extends AbstractController
 
     /**
      * @Route ("/products", name="products")
+     * @param Request $request
      * @return Response
      */
-    public function products(): Response
+    public function products(Request $request): Response
     {
-        $products = $this->getDoctrine()
-            ->getRepository(Product::class)
-            ->findAll();
+        $q = $request->get('q');
+
+        $query = $this->em
+            ->createQueryBuilder()
+            ->select('p')
+            ->from(Product::class, 'p');
+
+        if ($q) {
+            $query->where('p.name like :q')
+                ->setParameter('q', '%'. $q .'%');
+        }
+
+        $products = $query->getQuery()->getResult();
 
         return $this->render('/site/products.html.twig', [
             'products' => $products
