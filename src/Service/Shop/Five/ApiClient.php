@@ -25,14 +25,15 @@ class ApiClient
     }
 
     /**
+     * @param int $locationId
      * @param int $page
      * @return string
      * @throws GuzzleException
      */
-    public function getDiscounts(int $page = 1): string
+    public function getDiscounts(int $locationId, int $page): string
     {
         try {
-            $cookies = ['location_id' => self::DEFAULT_LOCATION_ID];
+            $cookies = ['location_id' => $locationId];
             $cookieJar = CookieJar::fromArray($cookies, self::DOMAIN);
 
             $response = $this->client->get(self::SITE_URL . self::GET_DISCOUNTS_URL, [

@@ -27,7 +27,7 @@
 .remove-from-favorites {
     position: absolute;
     top: 0;
-    right: 5px;
+    right: -1px;
 }
 
 .remove-from-favorites:hover {

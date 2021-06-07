@@ -4,6 +4,7 @@ namespace App\Service\Shop\Five;
 
 use App\Entity\Discount;
 use App\Entity\DiscountHistory;
+use App\Entity\DiscountLog;
 use App\Entity\Product;
 use Doctrine\ORM\EntityManagerInterface;
 
@@ -17,15 +18,16 @@ class DataHandler
     }
 
     /**
+     * @param int $locationId
      * @param array $results
      * @return int
      */
-    public function updateDiscounts(array $results): int
+    public function updateDiscounts(int $locationId, array $results): int
     {
         $total = 0;
         foreach ($results as $result) {
             $entity = new Discount();
-            $entity->setLocationId(ApiClient::DEFAULT_LOCATION_ID);
+            $entity->setLocationId($locationId);
             $entity->setProductId($result['plu']);
             $entity->setDiscountId($result['promo']['id']);
             $entity->setName($result['name']);
@@ -106,10 +108,11 @@ class DataHandler
     }
 
     /**
+     * @param int $locationId
      * @param array $results
      * @return int
      */
-    public function updateHistory(array $results): int
+    public function updateHistory(int $locationId, array $results): int
     {
         $total = 0;
         $existingDiscountIds = $this->getExistingDiscountIds();
@@ -120,7 +123,7 @@ class DataHandler
             }
 
             $entity = new DiscountHistory();
-            $entity->setLocationId(ApiClient::DEFAULT_LOCATION_ID);
+            $entity->setLocationId($locationId);
             $entity->setProductId($result['plu']);
             $entity->setDiscountId($discountId);
             $entity->setDateBegin(strtotime($result['promo']['date_begin']));
@@ -153,5 +156,22 @@ class DataHandler
         return array_map(function($item) {
             return (int)$item['discount_id'];
         }, $res);
+    }
+
+    /**
+     * @param int $locationId
+     * @param array $results
+     */
+    public function logDiscounts(int $locationId, array $results)
+    {
+        $entity = new DiscountLog();
+        $entity->setLocationId($locationId);
+        $entity->setData($results);
+        $entity->setSize(count($results));
+        $entity->setSavedAt(time());
+
+        $this->em->persist($entity);
+        $this->em->flush();
+        $this->em->clear();
     }
 }

@@ -26,16 +26,18 @@ class ParseDiscounts extends Command
         // Очищаем старые неактуальные данные
         $this->dataHandler->clearDiscounts();
 
+        $locationId = $this->getLocationId();
         $results = [];
         $page = 1;
         while (true) {
             $data = json_decode(
-                $this->apiClient->getDiscounts($page),
+                $this->apiClient->getDiscounts($locationId, $page),
                 JSON_UNESCAPED_UNICODE
             );
 
             if (empty($data['results'])) {
                 echo "Parsing finished\n";
+                --$page;
                 break;
             }
 
@@ -49,16 +51,27 @@ class ParseDiscounts extends Command
             sleep(2);
         }
 
+        // Логируем данные на случай если что-то пойдет не так
+        $this->dataHandler->logDiscounts($locationId, $results);
         // Сохраняем свежие данные по скидкам
-        $totalSaved = $this->dataHandler->updateDiscounts($results);
+        $totalSaved = $this->dataHandler->updateDiscounts($locationId, $results);
         echo "Saved $totalSaved records from $page pages \n";
         // Сохраняем товары для каталога (справочника)
         $totalNew = $this->dataHandler->updateProducts($results);
         echo "Saved $totalNew new products \n";
         // Обновляем историю скидок
-        $totalHistory = $this->dataHandler->updateHistory($results);
+        $totalHistory = $this->dataHandler->updateHistory($locationId, $results);
         echo "Saved $totalHistory history rows \n";
 
         return 0;
+    }
+
+    /**
+     * todo
+     * @return int
+     */
+    private function getLocationId(): int
+    {
+        return ApiClient::DEFAULT_LOCATION_ID;
     }
 }
