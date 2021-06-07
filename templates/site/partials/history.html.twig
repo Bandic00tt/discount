@@ -1,0 +1,40 @@
+<div class="history-months">
+    <div class="row">
+        <div class="col text-center">Январь</div>
+        <div class="col text-center">Февраль</div>
+        <div class="col text-center">Март</div>
+        <div class="col text-center">Апрель</div>
+        <div class="col text-center">Май</div>
+        <div class="col text-center">Июнь</div>
+        <div class="col text-center">Июль</div>
+        <div class="col text-center">Август</div>
+        <div class="col text-center">Сентябрь</div>
+        <div class="col text-center">Октябрь</div>
+        <div class="col text-center">Ноябрь</div>
+        <div class="col text-center">Декабрь</div>
+    </div>
+</div>
+
+<div class="discount-history">
+    <div class="row">
+        <div class="col">
+            <table class="table table-bordered">
+                {% for weekDay in 1..7 %}
+                    <tr>
+                        {% for date in currentYearDates %}
+                            {% if date|date('N') == weekDay %}
+                                <td class="{{ date in productDiscountDates ? 'discount-cell bg-success' : 'empty-cell' }}"
+                                    title="{{ date|date('d.m.Y') }}"
+                                    data-product_id="{{ product.productId }}"
+                                    data-discount_date="{{ date|date('d.m.Y') }}"
+                                >
+
+                                </td>
+                            {% endif %}
+                        {% endfor %}
+                    </tr>
+                {% endfor %}
+            </table>
+        </div>
+    </div>
+</div>
