@@ -34,4 +34,22 @@ $(function(){
 
         return false;
     });
+
+    $(document).on('click', '.discount-history-wrapper .switch-year', function(e){
+        e.preventDefault();
+        const productId = $(this).data('product_id');
+        const year = $(this).data('year');
+        const parent = $(this).closest('.discount-history-wrapper');
+
+        $.get('/get-discount-data-by-year', {
+            productId: productId,
+            year: year
+        }, (data) => {
+            if (data.hasOwnProperty('html')) {
+                parent.html(data.html);
+            }
+        }, 'json');
+
+        return false;
+    });
 });

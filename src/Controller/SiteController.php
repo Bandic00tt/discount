@@ -2,11 +2,13 @@
 namespace App\Controller;
 
 use App\Entity\Product;
+use App\Repository\ProductRepository;
 use App\Service\DiscountHelper;
 use App\Service\Shop\Five\DataHandler;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\NonUniqueResultException;
 use Doctrine\ORM\Query\QueryException;
+use Exception;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\RedirectResponse;
@@ -38,10 +40,10 @@ class SiteController extends AbstractController
         $favoritedProducts = $this->discountHelper->getFavoritedProducts();
         $discountHistory = $this->discountHelper->getDiscountHistory($locationId, $favoritedProducts);
         $year = date('Y');
+        $yearDates = $this->discountHelper->dateHelper->getYearDates($year);
         $discountDates = $this->discountHelper->getDiscountDates($year, $discountHistory);
         $discountYears = $this->discountHelper->getDiscountYears($discountHistory);
         $activeProductDiscounts = $this->discountHelper->getActiveProductDiscounts($favoritedProducts);
-        $yearDates = $this->discountHelper->dateHelper->getYearDates($year);
 
         return $this->render('/site/index.html.twig', [
             'year' => $year,
@@ -96,7 +98,36 @@ class SiteController extends AbstractController
         ]);
     }
 
+    /**
+     * @Route ("/get-discount-data-by-year", name="get_discount_data_by_year")
+     * @param Request $request
+     * @return JsonResponse
+     * @throws Exception
+     */
+    public function getDiscountDataByYear(Request $request): JsonResponse
+    {
+        $productId = $request->get('productId');
+        $year = $request->get('year');
 
+        $yearDates = $this->discountHelper->dateHelper->getYearDates($year);
+        $product = $this->em
+            ->getRepository(Product::class)
+            ->findOneBy(['product_id' => $productId]);
+        $locationId = $this->dataHandler->getLocationId();
+        $discountHistory = $this->discountHelper->getDiscountHistory($locationId, [$product]);
+        $productDiscountDates = $this->discountHelper->getDiscountDates($year, $discountHistory)[$productId];
+        $productDiscountYears = $this->discountHelper->getDiscountYears($discountHistory)[$productId];
+
+        return $this->json([
+            'html' => $this->renderView('/site/partials/history.html.twig', [
+                'year' => $year,
+                'yearDates' => $yearDates,
+                'product' => $product,
+                'productDiscountDates' => $productDiscountDates,
+                'productDiscountYears' => $productDiscountYears,
+            ])
+        ]);
+    }
 
     /**
      * todo: transfer query

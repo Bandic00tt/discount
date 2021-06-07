@@ -5,7 +5,13 @@
                 {% if y == year %}
                     <span class="fw-bold">{{ y }}</span>
                 {% else %}
-                    <a href="#" class="text-dark" data-product_id="{{ product.productId }}" data-year="{{ y }}">{{ y }}</a>
+                    <a href="#"
+                       class="text-dark switch-year"
+                       data-product_id="{{ product.productId }}"
+                       data-year="{{ y }}"
+                    >
+                        {{ y }}
+                    </a>
                 {% endif %}
             </li>
         {% endfor %}
