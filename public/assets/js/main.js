@@ -20,16 +20,15 @@ $(function(){
     $(document).on('click', '.discount-history .discount-cell', function(){
         const productId = $(this).data('product_id');
         const discountDate = $(this).data('discount_date');
-        const parent = $(this).closest('.favorited-product');
+        const parent = $(this).closest('.favorited-product').find('.product-item-wrapper');
 
         $.get('/get-time-limited-discount-data', {
             productId: productId,
             discountDate: discountDate
         }, (data) => {
-            parent.find('.price-discount').text(data.priceDiscount);
-            parent.find('.price-normal').text(data.priceNormal);
-            parent.find('.date-begin').text(data.dateBegin);
-            parent.find('.date-end').text(data.dateEnd);
+            if (data.hasOwnProperty('html')) {
+                parent.html(data.html);
+            }
         });
 
         return false;

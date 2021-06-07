@@ -1,0 +1,12 @@
+<div class="pt-3 text-center">
+    <div class="fs-2 text-success price-discount">
+        {{ priceDiscount }}
+    </div>
+    <div class="fs-4 price-normal">
+        {{ priceNormal }}
+    </div>
+    <div class="mt-2 date-range">
+        <span class="date-begin">{{ dateBegin|date('d.m.Y') }}</span>
+        - <span class="date-end">{{ dateEnd|date('d.m.Y') }}</span>
+    </div>
+</div>

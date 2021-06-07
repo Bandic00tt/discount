@@ -90,12 +90,14 @@ class SiteController extends AbstractController
 
         $discountHistory = $this->discountHelper->getTimeLimitedDiscountData($productId, $discountDate);
 
-        return $this->json([
+        $view = $this->renderView('/site/partials/productCard.html.twig', [
             'priceDiscount' => $discountHistory->getPriceDiscount(),
             'priceNormal' => $discountHistory->getPriceNormal(),
             'dateBegin' => date('d.m.Y', $discountHistory->getDateBegin()),
             'dateEnd' => date('d.m.Y', $discountHistory->getDateEnd()),
         ]);
+
+        return $this->json(['html' => $view]);
     }
 
     /**
@@ -118,15 +120,15 @@ class SiteController extends AbstractController
         $productDiscountDates = $this->discountHelper->getDiscountDates($year, $discountHistory)[$productId];
         $productDiscountYears = $this->discountHelper->getDiscountYears($discountHistory)[$productId];
 
-        return $this->json([
-            'html' => $this->renderView('/site/partials/history.html.twig', [
-                'year' => $year,
-                'yearDates' => $yearDates,
-                'product' => $product,
-                'productDiscountDates' => $productDiscountDates,
-                'productDiscountYears' => $productDiscountYears,
-            ])
+        $view = $this->renderView('/site/partials/history.html.twig', [
+            'year' => $year,
+            'yearDates' => $yearDates,
+            'product' => $product,
+            'productDiscountDates' => $productDiscountDates,
+            'productDiscountYears' => $productDiscountYears,
         ]);
+
+        return $this->json(['html' => $view]);
     }
 
     /**
