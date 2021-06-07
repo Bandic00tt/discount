@@ -12,7 +12,9 @@ class ApiClient
     const SITE_URL = 'https://5ka.ru';
     const DOMAIN = '.5ka.ru';
     const GET_DISCOUNTS_URL = '/api/v2/special_offers/';
+    const GET_REGIONS_URL = '/api/regions/';
     const RECORDS_PER_PAGE = 18; // Максимальное кол-во скидок, которое можно получить за 1 запрос
+    const DEFAULT_REGION_ID = 35; // Пока работаем только с городами Чувашляндии
     const DEFAULT_LOCATION_ID = 8262; // Пока парсим только Новчик, масштабироваться будем позднее
 
     private Client $client;
@@ -43,6 +45,37 @@ class ApiClient
                 ],
                 RequestOptions::COOKIES => $cookieJar
             ]);
+        } catch (Exception $ex) {
+            throw $ex;
+        }
+
+        return $response->getBody()->getContents();
+    }
+
+    /**
+     * @return string
+     * @throws GuzzleException
+     */
+    public function getRegions(): string
+    {
+        try {
+            $response = $this->client->get(self::SITE_URL . self::GET_REGIONS_URL);
+        } catch (Exception $ex) {
+            throw $ex;
+        }
+
+        return $response->getBody()->getContents();
+    }
+
+    /**
+     * @param int $regionId
+     * @return string
+     * @throws GuzzleException
+     */
+    public function getRegionCities(int $regionId): string
+    {
+        try {
+            $response = $this->client->get(self::SITE_URL . self::GET_REGIONS_URL . $regionId .'/');
         } catch (Exception $ex) {
             throw $ex;
         }

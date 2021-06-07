@@ -2,10 +2,12 @@
 
 namespace App\Service\Shop\Five;
 
+use App\Entity\City;
 use App\Entity\Discount;
 use App\Entity\DiscountHistory;
 use App\Entity\DiscountLog;
 use App\Entity\Product;
+use App\Entity\Region;
 use Doctrine\ORM\EntityManagerInterface;
 
 class DataHandler
@@ -173,5 +175,68 @@ class DataHandler
         $this->em->persist($entity);
         $this->em->flush();
         $this->em->clear();
+    }
+
+    public function clearRegions()
+    {
+        $this->em->createQueryBuilder()
+            ->delete(Region::class, 'r')
+            ->getQuery()
+            ->execute();
+    }
+
+    /**
+     * @param array $regions
+     * @return int
+     */
+    public function updateRegions(array $regions): int
+    {
+        $total = 0;
+        foreach ($regions as $region) {
+            $entity = new Region();
+            $entity->setRegionId($region['id']);
+            $entity->setName($region['name']);
+            $entity->setSavedAt(time());
+
+            $this->em->persist($entity);
+            ++$total;
+        }
+
+        $this->em->flush();
+        $this->em->clear();
+
+        return $total;
+    }
+
+    public function clearRegionCities()
+    {
+        $this->em->createQueryBuilder()
+            ->delete(City::class, 'c')
+            ->getQuery()
+            ->execute();
+    }
+
+    /**
+     * @param array $cities
+     * @return int
+     */
+    public function updateRegionCities(array $cities): int
+    {
+        $total = 0;
+        foreach ($cities as $city) {
+            $entity = new City();
+            $entity->setRegionId($city['region']);
+            $entity->setCityId($city['id']);
+            $entity->setName($city['name']);
+            $entity->setSavedAt(time());
+
+            $this->em->persist($entity);
+            ++$total;
+        }
+
+        $this->em->flush();
+        $this->em->clear();
+
+        return $total;
     }
 }
