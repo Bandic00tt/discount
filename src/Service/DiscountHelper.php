@@ -42,15 +42,39 @@ class DiscountHelper
     }
 
     /**
-     * @param array $products
+     * @param DiscountHistory[] $history
+     * @return array
+     */
+    public function getDiscountYears(array $history): array
+    {
+        $result = [];
+        foreach ($history as $item) {
+            $yearBegin = date('Y', $item->getDateBegin());
+            $yearEnd = date('Y', $item->getDateEnd());
+
+            $result[$item->getProductId()][] = $yearBegin;
+            $result[$item->getProductId()][] = $yearEnd;
+        }
+
+        // Проходимся еще раз по годам со скидками, убираем дубликаты и сортируем
+        foreach ($result as $productId => $years) {
+            $years = array_unique($years);
+            sort($years);
+            $result[$productId] = $years;
+        }
+
+        return $result;
+    }
+
+    /**
+     * @param string $year
+     * @param DiscountHistory[] $history
      * @return array
      * @throws Exception
      */
-    public function getDiscountDates(array $products): array
+    public function getDiscountDates(string $year, array $history): array
     {
-        $history = $this->getDiscountHistory($products);
         $result = [];
-
         foreach ($history as $item) {
             $result[$item->getProductId()][] = $this->dateHelper->getDatesFromRange(
                 new DateTime(date('Y-m-d', $item->getDateBegin())),
@@ -62,7 +86,9 @@ class DiscountHelper
             $productDates = [];
             foreach ($dateRanges as $dateRange) {
                 foreach ($dateRange as $date) {
-                    $productDates[] = $date;
+                    if (date('Y', strtotime($date)) === $year) {
+                        $productDates[] = $date;
+                    }
                 }
             }
 
@@ -73,10 +99,11 @@ class DiscountHelper
     }
 
     /**
+     * @param int $locationId
      * @param array $products
      * @return DiscountHistory[]
      */
-    public function getDiscountHistory(array $products): array
+    public function getDiscountHistory(int $locationId, array $products): array
     {
         $productIds = $this->getProductIds($products);
 
@@ -84,8 +111,12 @@ class DiscountHelper
             ->createQueryBuilder()
             ->select(['dh'])
             ->from(DiscountHistory::class, 'dh')
-            ->where('dh.product_id in (:productIds)')
-            ->setParameter('productIds', $productIds)
+            ->andWhere('dh.location_id = :locationId')
+            ->andWhere('dh.product_id in (:productIds)')
+            ->setParameters([
+                'locationId' => $locationId,
+                'productIds' => $productIds,
+            ])
             ->getQuery()
             ->getResult();
     }
@@ -95,7 +126,7 @@ class DiscountHelper
      * @return Discount[]
      * @throws QueryException
      */
-    public function getProductDiscounts(array $products): array
+    public function getActiveProductDiscounts(array $products): array
     {
         $productIds = $this->getProductIds($products);
 

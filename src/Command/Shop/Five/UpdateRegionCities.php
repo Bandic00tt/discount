@@ -23,17 +23,12 @@ class UpdateRegionCities extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $data = json_decode($this->apiClient->getRegionCities($this->getRegionId()), true);
+        $data = json_decode($this->apiClient->getRegionCities($this->dataHandler->getRegionId()), true);
         $this->dataHandler->clearRegionCities();
         $result = $this->dataHandler->updateRegionCities($data['items']);
 
         echo "Got $result region cities\n";
 
         return $result;
-    }
-
-    private function getRegionId(): int
-    {
-        return ApiClient::DEFAULT_REGION_ID;
     }
 }

@@ -26,7 +26,7 @@ class ParseDiscounts extends Command
         // Очищаем старые неактуальные данные
         $this->dataHandler->clearDiscounts();
 
-        $locationId = $this->getLocationId();
+        $locationId = $this->dataHandler->getLocationId();
         $results = [];
         $page = 1;
         while (true) {
@@ -64,14 +64,5 @@ class ParseDiscounts extends Command
         echo "Saved $totalHistory history rows \n";
 
         return 0;
-    }
-
-    /**
-     * todo
-     * @return int
-     */
-    private function getLocationId(): int
-    {
-        return ApiClient::DEFAULT_LOCATION_ID;
     }
 }

@@ -1,3 +1,17 @@
+<div class="text-lg-end">
+    <ul>
+        {% for y in productDiscountYears  %}
+            <li style="list-style-type: none; display: inline">
+                {% if y == year %}
+                    <span class="fw-bold">{{ y }}</span>
+                {% else %}
+                    <a href="#" class="text-dark" data-product_id="{{ product.productId }}" data-year="{{ y }}">{{ y }}</a>
+                {% endif %}
+            </li>
+        {% endfor %}
+    </ul>
+</div>
+
 <div class="history-months">
     <div class="row">
         <div class="col text-center">Январь</div>
@@ -21,7 +35,7 @@
             <table class="table table-bordered">
                 {% for weekDay in 1..7 %}
                     <tr>
-                        {% for date in currentYearDates %}
+                        {% for date in yearDates %}
                             {% if date|date('N') == weekDay %}
                                 <td class="{{ date in productDiscountDates ? 'discount-cell bg-success' : 'empty-cell' }}"
                                     title="{{ date|date('d.m.Y') }}"

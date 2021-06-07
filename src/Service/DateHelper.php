@@ -13,7 +13,7 @@ class DateHelper
      * @return array
      * @throws Exception
      */
-    public function getYearDatesRange(int $year): array
+    public function getYearDates(int $year): array
     {
         $start = new DateTime($year .'-01-01');
         $finish = new DateTime($year .'-12-31');

@@ -2,13 +2,11 @@
 namespace App\Controller;
 
 use App\Entity\Product;
-use App\Service\DateHelper;
 use App\Service\DiscountHelper;
-use DateTime;
+use App\Service\Shop\Five\DataHandler;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\NonUniqueResultException;
 use Doctrine\ORM\Query\QueryException;
-use Exception;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\RedirectResponse;
@@ -20,11 +18,13 @@ class SiteController extends AbstractController
 {
     private EntityManagerInterface $em;
     private DiscountHelper $discountHelper;
+    private DataHandler $dataHandler;
 
-    public function __construct(EntityManagerInterface $em, DiscountHelper $discountHelper)
+    public function __construct(EntityManagerInterface $em, DiscountHelper $discountHelper, DataHandler $dataHandler)
     {
         $this->em = $em;
         $this->discountHelper = $discountHelper;
+        $this->dataHandler = $dataHandler;
     }
 
     /**
@@ -34,17 +34,22 @@ class SiteController extends AbstractController
      */
     public function index(): Response
     {
-        $currentYearDates = $this->discountHelper->dateHelper->getYearDatesRange(date('Y'));
+        $locationId = $this->dataHandler->getLocationId();
         $favoritedProducts = $this->discountHelper->getFavoritedProducts();
-        // todo: limit for current year
-        $discountDates = $this->discountHelper->getDiscountDates($favoritedProducts);
-        $productDiscounts = $this->discountHelper->getProductDiscounts($favoritedProducts);
+        $discountHistory = $this->discountHelper->getDiscountHistory($locationId, $favoritedProducts);
+        $year = date('Y');
+        $discountDates = $this->discountHelper->getDiscountDates($year, $discountHistory);
+        $discountYears = $this->discountHelper->getDiscountYears($discountHistory);
+        $activeProductDiscounts = $this->discountHelper->getActiveProductDiscounts($favoritedProducts);
+        $yearDates = $this->discountHelper->dateHelper->getYearDates($year);
 
         return $this->render('/site/index.html.twig', [
-            'currentYearDates' => $currentYearDates,
+            'year' => $year,
+            'yearDates' => $yearDates,
             'favoritedProducts' => $favoritedProducts,
-            'productDiscounts' => $productDiscounts,
             'discountDates' => $discountDates,
+            'discountYears' => $discountYears,
+            'activeProductDiscounts' => $activeProductDiscounts,
         ]);
     }
 
@@ -91,7 +96,10 @@ class SiteController extends AbstractController
         ]);
     }
 
+
+
     /**
+     * todo: transfer query
      * @Route ("/products", name="products")
      * @param Request $request
      * @return Response

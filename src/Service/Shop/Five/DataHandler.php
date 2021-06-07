@@ -20,6 +20,20 @@ class DataHandler
     }
 
     /**
+     * todo
+     * @return int
+     */
+    public function getLocationId(): int
+    {
+        return ApiClient::DEFAULT_LOCATION_ID;
+    }
+
+    public function getRegionId(): int
+    {
+        return ApiClient::DEFAULT_REGION_ID;
+    }
+
+    /**
      * @param int $locationId
      * @param array $results
      * @return int
