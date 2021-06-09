@@ -1,0 +1,52 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+    <div class="product-block mt-5">
+        <div class="row">
+            <div class="col-lg-3">
+                <div class="product-card position-fixed" style="width: 306px;">
+                    <div class="row">
+                        <div class="col">
+                            <img src="{{ product.imgLink }}" class="img-fluid" alt="{{ product.name }}">
+                        </div>
+                        <div class="col">
+                            <div class="product-item-wrapper">
+                                {% if product.productId in activeProductDiscounts|keys %}
+                                    {% set discount = activeProductDiscounts[product.productId] %}
+                                    {% include '/site/partials/productCard.html.twig' with {
+                                        'priceDiscount': discount.priceDiscount,
+                                        'priceNormal': discount.priceNormal,
+                                        'dateBegin': discount.dateBegin,
+                                        'dateEnd': discount.dateEnd
+                                    } %}
+                                {% else %}
+                                    <div class="pt-3 text-center">
+                                        К сожалению, на данный момент по этому продукту нет выгодных предложений
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col">
+                            <small>{{ product.name }}</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-9">
+                {% for year in productDiscountYears %}
+                    <div class="discount-history-wrapper">
+                        {% include '/site/partials/history.html.twig' with {
+                            'year': year,
+                            'yearDates': datesByYears[year],
+                            'product': product,
+                            'productDiscountDates': productDiscountDatesByYears[year],
+                            'productDiscountYears': [year],
+                        } %}
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+{% endblock %}

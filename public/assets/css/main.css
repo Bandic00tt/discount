@@ -20,7 +20,7 @@
     cursor: pointer;
 }
 
-.favorited-product .product-card {
+.product-block .product-card {
     position: relative;
 }
 
@@ -34,15 +34,15 @@
     cursor: pointer;
 }
 
-.favorited-product .product-card .price-normal {
+.product-block .product-card .price-normal {
     text-decoration: line-through;
 }
 
-.favorited-product .product-card .date-range {
+.product-block .product-card .date-range {
     font-size: 12px;
 }
 
 .history-months {
-    padding-top: 15px;
+    padding-top: 5px;
     font-size: 14px;
 }

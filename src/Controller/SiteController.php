@@ -2,7 +2,6 @@
 namespace App\Controller;
 
 use App\Entity\Product;
-use App\Repository\ProductRepository;
 use App\Service\DiscountHelper;
 use App\Service\Shop\Five\DataHandler;
 use Doctrine\ORM\EntityManagerInterface;
@@ -75,6 +74,40 @@ class SiteController extends AbstractController
         $this->em->clear();
 
         return $this->redirectToRoute('index');
+    }
+
+    /**
+     * todo: it seems too complex, needs refactoring
+     * @Route ("/product/{id}", name="product", methods={"GET"})
+     * @param Request $request
+     * @return Response
+     * @throws Exception
+     */
+    public function product(Request $request): Response
+    {
+        $productId = $request->get('id');
+
+        $product = $this->em
+            ->getRepository(Product::class)
+            ->findOneBy(['product_id' => $productId]);
+        $activeProductDiscounts = $this->discountHelper->getActiveProductDiscounts([$product]);
+        $locationId = $this->dataHandler->getLocationId();
+        $discountHistory = $this->discountHelper->getDiscountHistory($locationId, [$product]);
+        $productDiscountYears = $this->discountHelper->getDiscountYears($discountHistory)[$productId];
+        $datesByYears = [];
+        $productDiscountDatesByYears = [];
+        foreach ($productDiscountYears as $year) {
+            $productDiscountDatesByYears[$year] = $this->discountHelper->getDiscountDates($year, $discountHistory)[$productId];
+            $datesByYears[$year] = $this->discountHelper->dateHelper->getYearDates($year);
+        }
+
+        return $this->render('/site/product.html.twig', [
+            'product' => $product,
+            'activeProductDiscounts' => $activeProductDiscounts,
+            'productDiscountYears' => $productDiscountYears,
+            'datesByYears' => $datesByYears,
+            'productDiscountDatesByYears' => $productDiscountDatesByYears,
+        ]);
     }
 
     /**

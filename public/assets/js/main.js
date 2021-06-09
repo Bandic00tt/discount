@@ -20,7 +20,7 @@ $(function(){
     $(document).on('click', '.discount-history .discount-cell', function(){
         const productId = $(this).data('product_id');
         const discountDate = $(this).data('discount_date');
-        const parent = $(this).closest('.favorited-product').find('.product-item-wrapper');
+        const parent = $(this).closest('.product-block').find('.product-item-wrapper');
 
         $.get('/get-time-limited-discount-data', {
             productId: productId,

@@ -2,7 +2,8 @@
 
 {% block body %}
     {% for product in favoritedProducts %}
-        <div class="favorited-product mt-5">
+        {% set productDiscountYears = discountYears[product.productId] %}
+        <div class="product-block mt-5">
             <div class="row">
                 <div class="col-lg-3">
                     <div class="product-card">
@@ -30,7 +31,13 @@
                         </div>
                         <div class="row">
                             <div class="col">
-                                <small>{{ product.name }}</small>
+                                <small>
+                                {% if productDiscountYears|length > 1 %}
+                                    <a href="{{ path('product', {'id': product.productId}) }}" target="_blank">{{ product.name }}</a>
+                                {% else %}
+                                    {{ product.name }}
+                                {% endif %}
+                                </small>
                             </div>
                         </div>
                         <a href="{{ path('remove_from_favorites', {'productId': product.productId}) }}"
@@ -45,7 +52,6 @@
                 <div class="col-lg-9">
                     <div class="discount-history-wrapper">
                         {% set productDiscountDates = discountDates[product.productId]|default([]) %}
-                        {% set productDiscountYears = discountYears[product.productId] %}
                         {% include '/site/partials/history.html.twig' with {
                             'year': year,
                             'yearDates': yearDates,
