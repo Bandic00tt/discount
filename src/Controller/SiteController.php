@@ -165,6 +165,7 @@ class SiteController extends AbstractController
     }
 
     /**
+     *
      * todo: transfer query
      * @Route ("/products", name="products")
      * @param Request $request
