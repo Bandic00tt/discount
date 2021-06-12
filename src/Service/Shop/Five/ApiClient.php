@@ -14,7 +14,6 @@ class ApiClient
     const GET_DISCOUNTS_URL = '/api/v2/special_offers/';
     const GET_REGIONS_URL = '/api/regions/';
     const RECORDS_PER_PAGE = 18; // Максимальное кол-во скидок, которое можно получить за 1 запрос
-    const DEFAULT_REGION_ID = 35; // Пока работаем только с городами Чувашляндии
     const DEFAULT_LOCATION_ID = 8262; // Пока парсим только Новчик, масштабироваться будем позднее
 
     private Client $client;

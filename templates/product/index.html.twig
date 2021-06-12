@@ -41,13 +41,6 @@
                                     </small>
                                 </div>
                             </div>
-                            <a href="{{ path('remove_from_favorites', {'productId': product.productId}) }}"
-                               class="remove-from-favorites text-danger"
-                               title="Удалить из избранного"
-                               data-id="{{ product.productId }}"
-                            >
-                                <i class="fa fa-close"></i>
-                            </a>
                         </div>
                     </div>
                     <div class="col-lg-9">
@@ -67,17 +60,24 @@
         {% endfor %}
     </div>
 
-    <div class="products-pagination">
-        <ul class="list-group list-group-horizontal">
-            {% for page in 1..pages %}
-                <li class="list-group-item {{ page == app.request.query.get('page') ? 'bg-primary' : '' }}">
-                    <a href="{{ path('index', {'page': page}) }}"
-                       class="product-page {{ page == app.request.query.get('page') ? 'active-page' : '' }}"
-                    >
-                        {{ page }}
-                    </a>
-                </li>
-            {% endfor %}
-        </ul>
-    </div>
+    {% if pages %}
+        <div class="products-pagination">
+            <ul class="list-group list-group-horizontal">
+                {% for page in 0..pages %}
+                    <li class="list-group-item {{ page == app.request.query.get('page') ? 'bg-primary' : '' }}">
+                        <a href="{{ path('index', {'page': page}) }}"
+                           class="product-page {{ page == app.request.query.get('page') ? 'active-page' : '' }}"
+                        >
+                            {{ page }}
+                        </a>
+                    </li>
+                {% endfor %}
+            </ul>
+        </div>
+    {% else %}
+        <div class="text-center fs-3">
+            К сожалению, информации по скидкам в выбранном городе у нас пока нет ;-( <br>
+            Но они обязательно появятся.
+        </div>
+    {% endif %}
 {% endblock %}

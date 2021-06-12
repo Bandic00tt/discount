@@ -5,7 +5,7 @@
                 {% if y == year %}
                     <span class="fw-bold">{{ y }}</span>
                 {% else %}
-                    <a href="#"
+                    <a href="{{ path('get_discount_data_by_year') }}"
                        class="text-dark switch-year"
                        data-product_id="{{ product.productId }}"
                        data-year="{{ y }}"

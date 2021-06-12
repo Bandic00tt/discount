@@ -2,6 +2,7 @@
 namespace App\Command\Shop\Five;
 
 use App\Service\Shop\Five\ApiClient;
+use GuzzleHttp\Exception\GuzzleException;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -13,25 +14,33 @@ class ParseDiscounts extends Command
 
     private ApiClient $apiClient;
     private DataHandler $dataHandler;
+    private int $locationId;
 
     public function __construct(ApiClient $apiClient, DataHandler $dataHandler)
     {
         parent::__construct();
         $this->apiClient = $apiClient;
         $this->dataHandler = $dataHandler;
+        $this->locationId = $this->getLocationId();
     }
 
+    /**
+     * todo
+     * @param InputInterface $input
+     * @param OutputInterface $output
+     * @return int
+     * @throws GuzzleException
+     */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         // Очищаем старые неактуальные данные
-        $this->dataHandler->clearDiscounts();
+        $this->dataHandler->clearDiscounts($this->locationId);
 
-        $locationId = $this->getLocationId();
         $results = [];
         $page = 1;
         while (true) {
             $data = json_decode(
-                $this->apiClient->getDiscounts($locationId, $page),
+                $this->apiClient->getDiscounts($this->locationId, $page),
                 JSON_UNESCAPED_UNICODE
             );
 
@@ -52,22 +61,22 @@ class ParseDiscounts extends Command
         }
 
         // Логируем данные на случай если что-то пойдет не так
-        $this->dataHandler->logDiscounts($locationId, $results);
+        $this->dataHandler->logDiscounts($this->locationId, $results);
         // Сохраняем свежие данные по скидкам
-        $totalSaved = $this->dataHandler->updateDiscounts($locationId, $results);
+        $totalSaved = $this->dataHandler->updateDiscounts($this->locationId, $results);
         echo "Saved $totalSaved records from $page pages \n";
         // Сохраняем товары для каталога (справочника)
-        $totalNew = $this->dataHandler->updateProducts($results);
+        $totalNew = $this->dataHandler->updateProducts($this->locationId, $results);
         echo "Saved $totalNew new products \n";
         // Обновляем историю скидок
-        $totalHistory = $this->dataHandler->updateHistory($locationId, $results);
+        $totalHistory = $this->dataHandler->updateHistory($this->locationId, $results);
         echo "Saved $totalHistory history rows \n";
 
         return 0;
     }
 
     /**
-     * todo delete
+     * todo change
      * @return int
      */
     public function getLocationId(): int

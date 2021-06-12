@@ -77,33 +77,38 @@ class DataHandler
     /**
      * Очищаем данные по скидкам для перезаписи, обновления данных
      */
-    public function clearDiscounts()
+    public function clearDiscounts(int $locationId)
     {
         $this->em->createQueryBuilder()
             ->delete(Discount::class, 'd')
+            ->andWhere('d.location_id = :locationId')
+            ->setParameter('locationId', $locationId)
             ->getQuery()
             ->execute();
     }
 
     /**
+     * @param int $locationId
      * @param array $results
      * @return int
      */
-    public function updateProducts(array $results): int
+    public function updateProducts(int $locationId, array $results): int
     {
         $total = 0;
         $existingProductIds = $this->getExistingProductIds();
+        $existingProductIdsForUpdate = [];
         foreach ($results as $result) {
             $productId = (int)$result['plu'];
             if (in_array($productId, $existingProductIds, true)) {
+                $existingProductIdsForUpdate[] = $productId;
                 continue;
             }
 
             $entity = new Product();
+            $entity->setLocationId($locationId);
             $entity->setProductId($productId);
             $entity->setName($result['name']);
             $entity->setImgLink($result['img_link']);
-            $entity->setIsFavorited(false);
             $entity->setCreatedAt(time());
             $entity->setUpdatedAt(time());
 
@@ -114,7 +119,25 @@ class DataHandler
         $this->em->flush();
         $this->em->clear();
 
+        $this->updateTimestampForExistingProducts($existingProductIdsForUpdate);
+
         return $total;
+    }
+
+    /**
+     * Обновляем таймстамп у ранее сохраненных продуктов, для которых пришли новые данные по скидкам
+     * @param array $productIds
+     * @return int|mixed|string
+     */
+    private function updateTimestampForExistingProducts(array $productIds)
+    {
+        return $this->em
+            ->createQueryBuilder()
+            ->update(Product::class, 'p')
+            ->andWhere('p.product_id in (:productIds)')
+            ->setParameter('productIds', $productIds)
+            ->getQuery()
+            ->execute();
     }
 
     /**
@@ -141,7 +164,7 @@ class DataHandler
     public function updateHistory(int $locationId, array $results): int
     {
         $total = 0;
-        $existingDiscountIds = $this->getExistingDiscountIds();
+        $existingDiscountIds = $this->getExistingDiscountIds($locationId);
         foreach ($results as $result) {
             $discountId = (int)$result['promo']['id'];
             if (in_array($discountId, $existingDiscountIds, true)) {
@@ -171,11 +194,13 @@ class DataHandler
     /**
      * @return int[]
      */
-    private function getExistingDiscountIds(): array
+    private function getExistingDiscountIds(int $locationId): array
     {
         $res = $this->em->createQueryBuilder()
             ->select(['dh.discount_id'])
             ->from(DiscountHistory::class, 'dh')
+            ->andWhere('dh.location_id = :locationId')
+            ->setParameter('locationId', $locationId)
             ->getQuery()
             ->getResult();
 

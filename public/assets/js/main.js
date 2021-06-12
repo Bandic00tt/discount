@@ -66,11 +66,12 @@ $(function(){
 
     $(document).on('click', '.discount-history-wrapper .switch-year', function(e){
         e.preventDefault();
+        const url = $(this).attr('href');
         const productId = $(this).data('product_id');
         const year = $(this).data('year');
         const parent = $(this).closest('.discount-history-wrapper');
 
-        $.get('/get-discount-data-by-year', {
+        $.get(url, {
             productId: productId,
             year: year
         }, (data) => {

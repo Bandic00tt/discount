@@ -6,12 +6,12 @@ use App\Service\DiscountHelper;
 use App\Service\Shop\Five\DataHandler;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\NonUniqueResultException;
+use Doctrine\ORM\NoResultException;
 use Doctrine\ORM\Query\QueryException;
 use Doctrine\ORM\Tools\Pagination\Paginator;
 use Exception;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -20,31 +20,32 @@ class ProductController extends AbstractController
 {
     private EntityManagerInterface $em;
     private DiscountHelper $discountHelper;
+    private $locationId;
 
     public function __construct(EntityManagerInterface $em, DiscountHelper $discountHelper)
     {
         $this->em = $em;
         $this->discountHelper = $discountHelper;
+        $this->locationId = $this->getLocationId();
     }
 
     /**
      * @Route ("/", name="index")
      * @param Request $request
      * @return Response
+     * @throws NonUniqueResultException
      * @throws QueryException
+     * @throws NoResultException
      */
     public function index(Request $request): Response
     {
         $page = $request->query->getInt('page', 1);
-        $productsQuery = $this->discountHelper->getProducts($page);
+        $productsQuery = $this->discountHelper->getProducts($this->locationId, $page);
         $paginator = new Paginator($productsQuery);
-        $pages = ceil($this->discountHelper->getTotalProducts() / DiscountHelper::MAX_RESULTS);
+        $pages = ceil($this->discountHelper->getTotalProducts($this->locationId) / DiscountHelper::MAX_RESULTS);
 
         $products = $productsQuery->getResult();
-        $discountHistory = $this->discountHelper->getDiscountHistory(
-            $this->getLocationId(),
-            $products
-        );
+        $discountHistory = $this->discountHelper->getDiscountHistory($this->locationId, $products);
         $year = date('Y');
         $yearDates = $this->discountHelper->dateHelper->getYearDates($year);
         $discountDates = $this->discountHelper->getDiscountDates($year, $discountHistory);
@@ -63,28 +64,6 @@ class ProductController extends AbstractController
     }
 
     /**
-     * @Route ("/remove-from-favorites/{productId}", name="remove_from_favorites")
-     * @param Request $request
-     * @return RedirectResponse
-     */
-    public function removeFromFavorites(Request $request): RedirectResponse
-    {
-        $productId = $request->get('productId');
-
-        /** @var Product $product */
-        $product = $this->em->getRepository(Product::class)
-            ->findOneBy(['product_id' => $productId]);
-
-        $isFavorited = 0;
-
-        $product->setIsFavorited($isFavorited);
-        $this->em->flush();
-        $this->em->clear();
-
-        return $this->redirectToRoute('index');
-    }
-
-    /**
      * todo: it seems too complex, needs refactoring
      * @Route ("/product/{id}", name="product", methods={"GET"})
      * @param Request $request
@@ -99,10 +78,7 @@ class ProductController extends AbstractController
             ->getRepository(Product::class)
             ->findOneBy(['product_id' => $productId]);
         $activeProductDiscounts = $this->discountHelper->getActiveProductDiscounts([$product]);
-        $discountHistory = $this->discountHelper->getDiscountHistory(
-            $this->getLocationId(),
-            [$product]
-        );
+        $discountHistory = $this->discountHelper->getDiscountHistory($this->locationId, [$product]);
         $productDiscountYears = $this->discountHelper->getDiscountYears($discountHistory)[$productId];
         $datesByYears = [];
         $productDiscountDatesByYears = [];
@@ -159,10 +135,7 @@ class ProductController extends AbstractController
             ->getRepository(Product::class)
             ->findOneBy(['product_id' => $productId]);
 
-        $discountHistory = $this->discountHelper->getDiscountHistory(
-            $this->getLocationId(),
-            [$product]
-        );
+        $discountHistory = $this->discountHelper->getDiscountHistory($this->locationId, [$product]);
         $productDiscountDates = $this->discountHelper->getDiscountDates($year, $discountHistory)[$productId];
         $productDiscountYears = $this->discountHelper->getDiscountYears($discountHistory)[$productId];
 
@@ -203,28 +176,6 @@ class ProductController extends AbstractController
         return $this->render('/product/products.html.twig', [
             'products' => $products
         ]);
-    }
-
-    /**
-     * @Route ("/toggle-product-favorited-status", name="toggleProductFavoritedStatus", methods={"POST"})
-     * @param Request $request
-     * @return JsonResponse
-     */
-    public function toggleProductFavoritedStatus(Request $request): JsonResponse
-    {
-        $productId = $request->get('productId');
-
-        /** @var Product $product */
-        $product = $this->em->getRepository(Product::class)
-            ->findOneBy(['product_id' => $productId]);
-
-        $isFavorited = (int)$product->getIsFavorited() ^ 1;
-
-        $product->setIsFavorited($isFavorited);
-        $this->em->flush();
-        $this->em->clear();
-
-        return $this->json(['isFavorited' => $isFavorited]);
     }
 
     /**

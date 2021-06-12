@@ -31,10 +31,11 @@ class DiscountHelper
     }
 
     /**
+     * @param int $locationId
      * @param int $page
      * @return Query
      */
-    public function getProducts(int $page): Query
+    public function getProducts(int $locationId, int $page): Query
     {
         $offset = ($page - 1) * self::MAX_RESULTS;
 
@@ -42,6 +43,8 @@ class DiscountHelper
             ->createQueryBuilder()
             ->select(['p'])
             ->from(Product::class, 'p')
+            ->andWhere('p.location_id = :locationId')
+            ->setParameter('locationId', $locationId)
             ->orderBy('p.updated_at', 'DESC')
             ->setFirstResult($offset)
             ->setMaxResults(self::MAX_RESULTS)
@@ -49,16 +52,19 @@ class DiscountHelper
     }
 
     /**
+     * @param int $locationId
      * @return int
-     * @throws NonUniqueResultException
      * @throws NoResultException
+     * @throws NonUniqueResultException
      */
-    public function getTotalProducts(): int
+    public function getTotalProducts(int $locationId): int
     {
         return $this->em
             ->createQueryBuilder()
             ->select(['count(p.id)'])
             ->from(Product::class, 'p')
+            ->andWhere('p.location_id = :locationId')
+            ->setParameter('locationId', $locationId)
             ->getQuery()
             ->getSingleScalarResult();
     }
