@@ -1,8 +1,8 @@
 {% extends 'base.html.twig' %}
 
 {% block body %}
-    {% for product in favoritedProducts %}
-        {% set productDiscountYears = discountYears[product.productId] %}
+    {% for product in products %}
+        {% set productDiscountYears = discountYears[product.productId]|default([]) %}
         <div class="product-block mb-5">
             <div class="row">
                 <div class="col-lg-3">

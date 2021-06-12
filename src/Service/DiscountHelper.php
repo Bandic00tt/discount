@@ -17,6 +17,8 @@ use Exception;
  */
 class DiscountHelper
 {
+    private const MAX_RESULTS = 20;
+
     private EntityManagerInterface $em;
     public DateHelper $dateHelper;
 
@@ -29,14 +31,14 @@ class DiscountHelper
     /**
      * @return array
      */
-    public function getFavoritedProducts(): array
+    public function getProducts(): array
     {
         return $this->em
             ->createQueryBuilder()
             ->select(['p'])
             ->from(Product::class, 'p')
-            ->where('p.is_favorited = ?1')
-            ->setParameter('1', true)
+            ->orderBy('p.updated_at', 'DESC')
+            ->setMaxResults(self::MAX_RESULTS)
             ->getQuery()
             ->getResult();
     }

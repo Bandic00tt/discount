@@ -19,13 +19,11 @@ class ProductController extends AbstractController
 {
     private EntityManagerInterface $em;
     private DiscountHelper $discountHelper;
-    private DataHandler $dataHandler;
 
-    public function __construct(EntityManagerInterface $em, DiscountHelper $discountHelper, DataHandler $dataHandler)
+    public function __construct(EntityManagerInterface $em, DiscountHelper $discountHelper)
     {
         $this->em = $em;
         $this->discountHelper = $discountHelper;
-        $this->dataHandler = $dataHandler;
     }
 
     /**
@@ -35,19 +33,21 @@ class ProductController extends AbstractController
      */
     public function index(): Response
     {
-        $locationId = $this->dataHandler->getLocationId();
-        $favoritedProducts = $this->discountHelper->getFavoritedProducts();
-        $discountHistory = $this->discountHelper->getDiscountHistory($locationId, $favoritedProducts);
+        $products = $this->discountHelper->getProducts();
+        $discountHistory = $this->discountHelper->getDiscountHistory(
+            $this->getLocationId(),
+            $products
+        );
         $year = date('Y');
         $yearDates = $this->discountHelper->dateHelper->getYearDates($year);
         $discountDates = $this->discountHelper->getDiscountDates($year, $discountHistory);
         $discountYears = $this->discountHelper->getDiscountYears($discountHistory);
-        $activeProductDiscounts = $this->discountHelper->getActiveProductDiscounts($favoritedProducts);
+        $activeProductDiscounts = $this->discountHelper->getActiveProductDiscounts($products);
 
         return $this->render('/product/index.html.twig', [
             'year' => $year,
             'yearDates' => $yearDates,
-            'favoritedProducts' => $favoritedProducts,
+            'products' => $products,
             'discountDates' => $discountDates,
             'discountYears' => $discountYears,
             'activeProductDiscounts' => $activeProductDiscounts,
@@ -91,8 +91,10 @@ class ProductController extends AbstractController
             ->getRepository(Product::class)
             ->findOneBy(['product_id' => $productId]);
         $activeProductDiscounts = $this->discountHelper->getActiveProductDiscounts([$product]);
-        $locationId = $this->dataHandler->getLocationId();
-        $discountHistory = $this->discountHelper->getDiscountHistory($locationId, [$product]);
+        $discountHistory = $this->discountHelper->getDiscountHistory(
+            $this->getLocationId(),
+            [$product]
+        );
         $productDiscountYears = $this->discountHelper->getDiscountYears($discountHistory)[$productId];
         $datesByYears = [];
         $productDiscountDatesByYears = [];
@@ -148,8 +150,11 @@ class ProductController extends AbstractController
         $product = $this->em
             ->getRepository(Product::class)
             ->findOneBy(['product_id' => $productId]);
-        $locationId = $this->dataHandler->getLocationId();
-        $discountHistory = $this->discountHelper->getDiscountHistory($locationId, [$product]);
+
+        $discountHistory = $this->discountHelper->getDiscountHistory(
+            $this->getLocationId(),
+            [$product]
+        );
         $productDiscountDates = $this->discountHelper->getDiscountDates($year, $discountHistory)[$productId];
         $productDiscountYears = $this->discountHelper->getDiscountYears($discountHistory)[$productId];
 
@@ -212,5 +217,13 @@ class ProductController extends AbstractController
         $this->em->clear();
 
         return $this->json(['isFavorited' => $isFavorited]);
+    }
+
+    /**
+     * @return int
+     */
+    private function getLocationId(): int
+    {
+        return (int) $_COOKIE['discountLocationId'] ?? DataHandler::MOSCOW_ID;
     }
 }
