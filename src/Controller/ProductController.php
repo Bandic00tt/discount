@@ -7,6 +7,7 @@ use App\Service\Shop\Five\DataHandler;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\NonUniqueResultException;
 use Doctrine\ORM\Query\QueryException;
+use Doctrine\ORM\Tools\Pagination\Paginator;
 use Exception;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -28,12 +29,19 @@ class ProductController extends AbstractController
 
     /**
      * @Route ("/", name="index")
+     * @param Request $request
      * @return Response
      * @throws QueryException
      */
-    public function index(): Response
+    public function index(Request $request): Response
     {
-        $products = $this->discountHelper->getProducts();
+        $offset = max(0, $request->query->getInt('offset', 0));
+        $productsQuery = $this->discountHelper->getProducts($offset);
+        $paginator = new Paginator($productsQuery);
+        $previous = $offset - DiscountHelper::MAX_RESULTS;
+        $next = min(count($paginator), $offset + DiscountHelper::MAX_RESULTS);
+
+        $products = $productsQuery->getResult();
         $discountHistory = $this->discountHelper->getDiscountHistory(
             $this->getLocationId(),
             $products
@@ -45,9 +53,11 @@ class ProductController extends AbstractController
         $activeProductDiscounts = $this->discountHelper->getActiveProductDiscounts($products);
 
         return $this->render('/product/index.html.twig', [
+            'paginator' => $paginator,
+            'previous' => $previous,
+            'next' => $next,
             'year' => $year,
             'yearDates' => $yearDates,
-            'products' => $products,
             'discountDates' => $discountDates,
             'discountYears' => $discountYears,
             'activeProductDiscounts' => $activeProductDiscounts,

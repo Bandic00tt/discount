@@ -7,6 +7,7 @@ use App\Entity\Product;
 use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\NonUniqueResultException;
+use Doctrine\ORM\Query;
 use Doctrine\ORM\Query\QueryException;
 use Exception;
 
@@ -17,7 +18,7 @@ use Exception;
  */
 class DiscountHelper
 {
-    private const MAX_RESULTS = 20;
+    public const MAX_RESULTS = 20;
 
     private EntityManagerInterface $em;
     public DateHelper $dateHelper;
@@ -29,18 +30,19 @@ class DiscountHelper
     }
 
     /**
-     * @return array
+     * @param int $offset
+     * @return Query
      */
-    public function getProducts(): array
+    public function getProducts(int $offset): Query
     {
         return $this->em
             ->createQueryBuilder()
             ->select(['p'])
             ->from(Product::class, 'p')
             ->orderBy('p.updated_at', 'DESC')
+            ->setFirstResult($offset)
             ->setMaxResults(self::MAX_RESULTS)
-            ->getQuery()
-            ->getResult();
+            ->getQuery();
     }
 
     /**

@@ -1,7 +1,7 @@
 {% extends 'base.html.twig' %}
 
 {% block body %}
-    {% for product in products %}
+    {% for product in paginator %}
         {% set productDiscountYears = discountYears[product.productId]|default([]) %}
         <div class="product-block mb-5">
             <div class="row">
@@ -64,4 +64,12 @@
             </div>
         </div>
     {% endfor %}
+
+    {% if previous >= 0 %}
+        <a href="{{ path('index', {'offset': previous}) }}">Назад</a>
+    {% endif %}
+
+    {% if next <= paginator|length %}
+        <a href="{{ path('index', {'offset': next}) }}">Вперед</a>
+    {% endif %}
 {% endblock %}
