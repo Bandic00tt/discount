@@ -3,10 +3,10 @@
 {% block body %}
     {% for product in favoritedProducts %}
         {% set productDiscountYears = discountYears[product.productId] %}
-        <div class="product-block mt-5">
+        <div class="product-block mb-5">
             <div class="row">
                 <div class="col-lg-3">
-                    <div class="product-card">
+                    <div class="product-card pt-3">
                         <div class="row">
                             <div class="col">
                                 <img src="{{ product.imgLink }}" class="img-fluid" alt="{{ product.name }}">
@@ -15,7 +15,7 @@
                                 <div class="product-item-wrapper">
                                     {% if product.productId in activeProductDiscounts|keys %}
                                         {% set discount = activeProductDiscounts[product.productId] %}
-                                        {% include '/site/partials/productCard.html.twig' with {
+                                        {% include '/product/partials/productCard.html.twig' with {
                                             'priceDiscount': discount.priceDiscount,
                                             'priceNormal': discount.priceNormal,
                                             'dateBegin': discount.dateBegin,
@@ -52,7 +52,7 @@
                 <div class="col-lg-9">
                     <div class="discount-history-wrapper">
                         {% set productDiscountDates = discountDates[product.productId]|default([]) %}
-                        {% include '/site/partials/history.html.twig' with {
+                        {% include '/product/partials/history.html.twig' with {
                             'year': year,
                             'yearDates': yearDates,
                             'product': product,

@@ -1,4 +1,34 @@
 $(function(){
+    function setCityName(data) {
+        if (data.hasOwnProperty('name')) {
+            $('.select-city').text(data.name);
+        }
+    }
+
+    function viewCities(data) {
+        if (data.hasOwnProperty('html')) {
+            let modal = $('#selectCityModal');
+            modal.find('.modal-body').html(data.html);
+
+            const selectCityModal = new bootstrap.Modal(modal, {keyboard: false});
+            selectCityModal.show();
+        }
+    }
+
+    const locationId = Cookies.get('discountLocationId');
+    if (locationId === undefined) {
+        $.get('/city', setCityName);
+        $.get('/cities', viewCities, 'json');
+    } else {
+        $.get('/city', {cityId: locationId}, setCityName);
+    }
+
+    $(document).on('click', '.select-city', function (e){
+        e.preventDefault();
+        $.get('/cities', viewCities, 'json');
+        return false;
+    });
+
     $(document).on('click', '.discount-wrapper .favorite', function(){
         const productId = $(this).closest('.discount-wrapper').data('id');
 

@@ -1,0 +1,7 @@
+<ul class="list-group">
+    {% for id, city in cities %}
+        <li class="list-group-item flex-fill select-city-item">
+            <a href="{{ path('app_select_city', {'id': id} ) }}">{{ city }}</a>
+        </li>
+    {% endfor %}
+</ul>

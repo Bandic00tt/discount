@@ -4,6 +4,7 @@ namespace App\Command\Shop\Five;
 use App\Service\Shop\Five\ApiClient;
 use App\Service\Shop\Five\DataHandler;
 use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
@@ -21,10 +22,16 @@ class UpdateRegionCities extends Command
         $this->dataHandler = $dataHandler;
     }
 
+    protected function configure()
+    {
+        $this->addArgument('regionId', InputArgument::REQUIRED);
+    }
+
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $data = json_decode($this->apiClient->getRegionCities($this->dataHandler->getRegionId()), true);
-        $this->dataHandler->clearRegionCities();
+        $regionId = $input->getArgument('regionId');
+        $data = json_decode($this->apiClient->getRegionCities($regionId), true);
+        $this->dataHandler->clearRegionCities($regionId);
         $result = $this->dataHandler->updateRegionCities($data['items']);
 
         echo "Got $result region cities\n";
