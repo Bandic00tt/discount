@@ -7,6 +7,7 @@ use App\Entity\Product;
 use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\NonUniqueResultException;
+use Doctrine\ORM\NoResultException;
 use Doctrine\ORM\Query;
 use Doctrine\ORM\Query\QueryException;
 use Exception;
@@ -30,11 +31,13 @@ class DiscountHelper
     }
 
     /**
-     * @param int $offset
+     * @param int $page
      * @return Query
      */
-    public function getProducts(int $offset): Query
+    public function getProducts(int $page): Query
     {
+        $offset = ($page - 1) * self::MAX_RESULTS;
+
         return $this->em
             ->createQueryBuilder()
             ->select(['p'])
@@ -43,6 +46,21 @@ class DiscountHelper
             ->setFirstResult($offset)
             ->setMaxResults(self::MAX_RESULTS)
             ->getQuery();
+    }
+
+    /**
+     * @return int
+     * @throws NonUniqueResultException
+     * @throws NoResultException
+     */
+    public function getTotalProducts(): int
+    {
+        return $this->em
+            ->createQueryBuilder()
+            ->select(['count(p.id)'])
+            ->from(Product::class, 'p')
+            ->getQuery()
+            ->getSingleScalarResult();
     }
 
     /**

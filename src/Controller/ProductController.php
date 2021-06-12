@@ -35,11 +35,10 @@ class ProductController extends AbstractController
      */
     public function index(Request $request): Response
     {
-        $offset = max(0, $request->query->getInt('offset', 0));
-        $productsQuery = $this->discountHelper->getProducts($offset);
+        $page = $request->query->getInt('page', 1);
+        $productsQuery = $this->discountHelper->getProducts($page);
         $paginator = new Paginator($productsQuery);
-        $previous = $offset - DiscountHelper::MAX_RESULTS;
-        $next = min(count($paginator), $offset + DiscountHelper::MAX_RESULTS);
+        $pages = ceil($this->discountHelper->getTotalProducts() / DiscountHelper::MAX_RESULTS);
 
         $products = $productsQuery->getResult();
         $discountHistory = $this->discountHelper->getDiscountHistory(
@@ -54,8 +53,7 @@ class ProductController extends AbstractController
 
         return $this->render('/product/index.html.twig', [
             'paginator' => $paginator,
-            'previous' => $previous,
-            'next' => $next,
+            'pages' => $pages,
             'year' => $year,
             'yearDates' => $yearDates,
             'discountDates' => $discountDates,

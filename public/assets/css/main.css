@@ -82,3 +82,11 @@ img.logo {
     padding-top: 5px;
     font-size: 14px;
 }
+
+.product-page {
+    display: block;
+}
+
+.active-page {
+    color: #fff;
+}
