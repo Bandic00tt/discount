@@ -1,7 +1,10 @@
 <?php
 namespace App\Command\Shop\Five;
 
+use App\Entity\City;
 use App\Service\Shop\Five\ApiClient;
+use Doctrine\ORM\EntityNotFoundException;
+use Doctrine\ORM\NonUniqueResultException;
 use GuzzleHttp\Exception\GuzzleException;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -76,11 +79,31 @@ class ParseDiscounts extends Command
     }
 
     /**
-     * todo change
      * @return int
+     * @throws NonUniqueResultException|EntityNotFoundException
      */
     public function getLocationId(): int
     {
-        return ApiClient::DEFAULT_LOCATION_ID;
+        /** @var City $location */
+        $location = $this->dataHandler->em
+            ->createQueryBuilder()
+            ->select('c')
+            ->from(City::class, 'c')
+            ->andWhere('c.city_id in (:cityIds)')
+            ->setParameter('cityIds', array_keys(DataHandler::CITIES))
+            ->orderBy('c.updated_at', 'ASC')
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getOneOrNullResult();
+
+        if ($location) {
+            $location->setUpdatedAt(time());
+            $this->dataHandler->em->flush();
+            $this->dataHandler->em->clear();
+
+            return $location->getCityId();
+        }
+
+        throw new EntityNotFoundException('City not found');
     }
 }

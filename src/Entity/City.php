@@ -35,7 +35,12 @@ class City
     /**
      * @ORM\Column(type="integer")
      */
-    private $saved_at;
+    private $created_at;
+
+    /**
+     * @ORM\Column(type="integer")
+     */
+    private $updated_at;
 
     public function getId(): ?int
     {
@@ -78,14 +83,26 @@ class City
         return $this;
     }
 
-    public function getSavedAt(): ?int
+    public function getCreatedAt(): ?int
     {
-        return $this->saved_at;
+        return $this->created_at;
     }
 
-    public function setSavedAt(int $saved_at): self
+    public function setCreatedAt(int $created_at): self
     {
-        $this->saved_at = $saved_at;
+        $this->created_at = $created_at;
+
+        return $this;
+    }
+
+    public function getUpdatedAt(): ?int
+    {
+        return $this->updated_at;
+    }
+
+    public function setUpdatedAt(int $updated_at): self
+    {
+        $this->updated_at = $updated_at;
 
         return $this;
     }

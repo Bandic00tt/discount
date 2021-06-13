@@ -63,7 +63,7 @@
     {% if pages %}
         <div class="products-pagination">
             <ul class="list-group list-group-horizontal">
-                {% for page in 0..pages %}
+                {% for page in 1..pages %}
                     <li class="list-group-item {{ page == app.request.query.get('page') ? 'bg-primary' : '' }}">
                         <a href="{{ path('app_index', {'page': page}) }}"
                            class="product-page {{ page == app.request.query.get('page') ? 'active-page' : '' }}"

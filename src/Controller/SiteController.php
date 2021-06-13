@@ -46,6 +46,6 @@ class SiteController extends AbstractController
         $cityId = $request->get('id');
         setcookie('discountLocationId', $cityId, time() + 604800 * 52, '/');
 
-        return $this->redirectToRoute('index');
+        return $this->redirectToRoute('app_index');
     }
 }

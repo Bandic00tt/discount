@@ -36,7 +36,7 @@ class DataHandler
         self::NOVCHIK_ID => 'Новочебоксарск',
     ];
 
-    private EntityManagerInterface $em;
+    public EntityManagerInterface $em;
 
     public function __construct(EntityManagerInterface $em)
     {
@@ -127,13 +127,14 @@ class DataHandler
     /**
      * Обновляем таймстамп у ранее сохраненных продуктов, для которых пришли новые данные по скидкам
      * @param array $productIds
-     * @return int|mixed|string
+     * @return void
      */
-    private function updateTimestampForExistingProducts(array $productIds)
+    private function updateTimestampForExistingProducts(array $productIds): void
     {
-        return $this->em
+        $this->em
             ->createQueryBuilder()
             ->update(Product::class, 'p')
+            ->set('p.updated_at', time())
             ->andWhere('p.product_id in (:productIds)')
             ->setParameter('productIds', $productIds)
             ->getQuery()
@@ -275,7 +276,7 @@ class DataHandler
             $entity->setRegionId($city['region']);
             $entity->setCityId($city['id']);
             $entity->setName($city['name']);
-            $entity->setSavedAt(time());
+            $entity->setCreatedAt(time());
 
             $this->em->persist($entity);
             ++$total;
