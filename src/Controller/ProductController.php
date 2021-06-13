@@ -30,7 +30,7 @@ class ProductController extends AbstractController
     }
 
     /**
-     * @Route ("/{page}", defaults={"page"=1}, name="app_index")
+     * @Route ("/{page}", defaults={"page"=1}, requirements={"page"="\d+"}, name="app_index")
      * @param Request $request
      * @return Response
      * @throws NonUniqueResultException
@@ -44,10 +44,7 @@ class ProductController extends AbstractController
 
         $totalProducts = $this->discountHelper->getTotalProducts($this->locationId, $searchQuery);
         $pages = ceil($totalProducts / DiscountHelper::MAX_RESULTS);
-        $productsQuery = $this->discountHelper->getProducts($this->locationId, $page, $searchQuery);
-        $paginator = new Paginator($productsQuery);
-
-        $products = $productsQuery->getResult();
+        $products =  $this->discountHelper->getProducts($this->locationId, $page, $searchQuery);
         $discountHistory = $this->discountHelper->getDiscountHistory($this->locationId, $products);
         $year = date('Y');
         $yearDates = $this->discountHelper->dateHelper->getYearDates($year);
@@ -56,7 +53,7 @@ class ProductController extends AbstractController
         $activeProductDiscounts = $this->discountHelper->getActiveProductDiscounts($products);
 
         return $this->render('/product/index.html.twig', [
-            'paginator' => $paginator,
+            'products' => $products,
             'pages' => $pages,
             'currentPage' => $page,
             'year' => $year,
@@ -187,6 +184,6 @@ class ProductController extends AbstractController
      */
     private function getLocationId(): int
     {
-        return (int) $_COOKIE['discountLocationId'] ?? DataHandler::MOSCOW_ID;
+        return (int) ($_COOKIE['discountLocationId'] ?? DataHandler::MOSCOW_ID);
     }
 }

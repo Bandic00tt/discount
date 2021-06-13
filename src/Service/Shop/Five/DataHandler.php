@@ -95,7 +95,7 @@ class DataHandler
     public function updateProducts(int $locationId, array $results): int
     {
         $total = 0;
-        $existingProductIds = $this->getExistingProductIds();
+        $existingProductIds = $this->getExistingProductIds($locationId);
         $existingProductIdsForUpdate = [];
         foreach ($results as $result) {
             $productId = (int)$result['plu'];
@@ -144,11 +144,13 @@ class DataHandler
     /**
      * @return int[]
      */
-    private function getExistingProductIds(): array
+    private function getExistingProductIds(int $locationId): array
     {
         $res = $this->em->createQueryBuilder()
             ->select(['p.product_id'])
             ->from(Product::class, 'p')
+            ->andWhere('p.location_id = :locationId')
+            ->setParameter('locationId', $locationId)
             ->getQuery()
             ->getResult();
 

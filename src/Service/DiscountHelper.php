@@ -34,9 +34,9 @@ class DiscountHelper
      * @param int $locationId
      * @param int $page
      * @param string|null $searchQuery
-     * @return Query
+     * @return Product[]
      */
-    public function getProducts(int $locationId, int $page, ?string $searchQuery): Query
+    public function getProducts(int $locationId, int $page, ?string $searchQuery): array
     {
         $offset = 0;
         if ($page > 1) {
@@ -59,7 +59,7 @@ class DiscountHelper
             ->setFirstResult($offset)
             ->setMaxResults(self::MAX_RESULTS);
 
-        return $query->getQuery();
+        return $query->getQuery()->getResult();
     }
 
     /**
