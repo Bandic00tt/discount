@@ -30,7 +30,7 @@ class ProductController extends AbstractController
     }
 
     /**
-     * @Route ("/", name="app_index")
+     * @Route ("/{page}", defaults={"page"=1}, name="app_index")
      * @param Request $request
      * @return Response
      * @throws NonUniqueResultException
@@ -39,10 +39,13 @@ class ProductController extends AbstractController
      */
     public function index(Request $request): Response
     {
-        $page = $request->query->getInt('page', 1);
-        $productsQuery = $this->discountHelper->getProducts($this->locationId, $page);
+        $page = (int) $request->get('page', 1);
+        $searchQuery = $request->get('q');
+
+        $totalProducts = $this->discountHelper->getTotalProducts($this->locationId, $searchQuery);
+        $pages = ceil($totalProducts / DiscountHelper::MAX_RESULTS);
+        $productsQuery = $this->discountHelper->getProducts($this->locationId, $page, $searchQuery);
         $paginator = new Paginator($productsQuery);
-        $pages = ceil($this->discountHelper->getTotalProducts($this->locationId) / DiscountHelper::MAX_RESULTS);
 
         $products = $productsQuery->getResult();
         $discountHistory = $this->discountHelper->getDiscountHistory($this->locationId, $products);
@@ -55,6 +58,7 @@ class ProductController extends AbstractController
         return $this->render('/product/index.html.twig', [
             'paginator' => $paginator,
             'pages' => $pages,
+            'currentPage' => $page,
             'year' => $year,
             'yearDates' => $yearDates,
             'discountDates' => $discountDates,

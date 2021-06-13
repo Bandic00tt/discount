@@ -1,7 +1,42 @@
 {% extends 'base.html.twig' %}
 
 {% block body %}
-    <div class="products">
+    <div class="row mt-2">
+        <div class="col-6">
+            <div class="search-form">
+                <form action="{{ path('app_index') }}" method="get" class="row">
+                    <div class="col-8">
+                        <div class="input-group">
+                            <label for="search-query" class="visually-hidden"></label>
+                            <input type="text"
+                                   name="q"
+                                   class="form-control"
+                                   id="search-query"
+                                   placeholder="Найти продукт"
+                                   value="{{ app.request.query.get('q') }}"
+                            >
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        <div class="col-6 text-end">
+            <a href="#"
+               class="select-city"
+               title="Выбрать город"
+               data-bs-toggle="modal"
+               data-bs-target="#selectCityModal"
+            >
+                <!-- Ajax loading -->
+            </a>
+        </div>
+    </div>
+    <div class="products mt-2">
         {% for product in paginator %}
             {% set productDiscountYears = discountYears[product.productId]|default([]) %}
             <div class="product-block mb-5">
@@ -64,9 +99,14 @@
         <div class="products-pagination">
             <ul class="list-group list-group-horizontal">
                 {% for page in 1..pages %}
-                    <li class="list-group-item {{ page == app.request.query.get('page') ? 'bg-primary' : '' }}">
-                        <a href="{{ path('app_index', {'page': page}) }}"
-                           class="product-page {{ page == app.request.query.get('page') ? 'active-page' : '' }}"
+                    {% set pageRouteParams = {'page': page} %}
+                    {% if app.request.query.get('q') %}
+                        {% set pageRouteParams = pageRouteParams|merge({'q': app.request.query.get('q')}) %}
+                    {% endif %}
+
+                    <li class="list-group-item {{ page == currentPage ? 'bg-primary' : '' }}">
+                        <a href="{{ path('app_index', pageRouteParams) }}"
+                           class="product-page {{ page == currentPage ? 'active-page' : '' }}"
                         >
                             {{ page }}
                         </a>

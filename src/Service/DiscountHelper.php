@@ -33,40 +33,57 @@ class DiscountHelper
     /**
      * @param int $locationId
      * @param int $page
+     * @param string|null $searchQuery
      * @return Query
      */
-    public function getProducts(int $locationId, int $page): Query
+    public function getProducts(int $locationId, int $page, ?string $searchQuery): Query
     {
-        $offset = ($page - 1) * self::MAX_RESULTS;
+        $offset = 0;
+        if ($page > 1) {
+            $offset = ($page - 1) * self::MAX_RESULTS;
+        }
 
-        return $this->em
+        $query = $this->em
             ->createQueryBuilder()
             ->select(['p'])
             ->from(Product::class, 'p')
             ->andWhere('p.location_id = :locationId')
-            ->setParameter('locationId', $locationId)
-            ->orderBy('p.updated_at', 'DESC')
+            ->setParameter('locationId', $locationId);
+
+        if ($searchQuery) {
+            $query->andWhere('p.name like :searchQuery')
+                ->setParameter('searchQuery', '%'. $searchQuery .'%');
+        }
+
+        $query->orderBy('p.updated_at', 'DESC')
             ->setFirstResult($offset)
-            ->setMaxResults(self::MAX_RESULTS)
-            ->getQuery();
+            ->setMaxResults(self::MAX_RESULTS);
+
+        return $query->getQuery();
     }
 
     /**
      * @param int $locationId
+     * @param string|null $searchQuery
      * @return int
      * @throws NoResultException
      * @throws NonUniqueResultException
      */
-    public function getTotalProducts(int $locationId): int
+    public function getTotalProducts(int $locationId, ?string $searchQuery): int
     {
-        return $this->em
+        $query = $this->em
             ->createQueryBuilder()
             ->select(['count(p.id)'])
             ->from(Product::class, 'p')
             ->andWhere('p.location_id = :locationId')
-            ->setParameter('locationId', $locationId)
-            ->getQuery()
-            ->getSingleScalarResult();
+            ->setParameter('locationId', $locationId);
+
+        if ($searchQuery) {
+            $query->andWhere('p.name like :searchQuery')
+                ->setParameter('searchQuery', '%'. $searchQuery .'%');
+        }
+
+        return $query->getQuery()->getSingleScalarResult();
     }
 
     /**
