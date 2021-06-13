@@ -114,7 +114,11 @@ class DiscountHelper
             $productDates = [];
             foreach ($dateRanges as $dateRange) {
                 foreach ($dateRange as $date) {
-                    if (date('Y', strtotime($date)) === $year) {
+                    $cond = date('Y', strtotime($date)) === $year
+                        || date('Y', strtotime($date)) === (string)((int) $year - 1)
+                        || date('Y', strtotime($date)) === (string)((int) $year + 1);
+
+                    if ($cond) {
                         $productDates[] = $date;
                     }
                 }
