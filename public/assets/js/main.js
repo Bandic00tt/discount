@@ -52,7 +52,7 @@ $(function(){
         const discountDate = $(this).data('discount_date');
         const parent = $(this).closest('.product-block').find('.product-item-wrapper');
 
-        $.get('/get-time-limited-discount-data', {
+        $.get('/time-limited-discount-data', {
             productId: productId,
             discountDate: discountDate
         }, (data) => {

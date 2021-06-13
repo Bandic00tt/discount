@@ -20,7 +20,7 @@ class ProductController extends AbstractController
 {
     private EntityManagerInterface $em;
     private DiscountHelper $discountHelper;
-    private $locationId;
+    private int $locationId;
 
     public function __construct(EntityManagerInterface $em, DiscountHelper $discountHelper)
     {
@@ -30,7 +30,7 @@ class ProductController extends AbstractController
     }
 
     /**
-     * @Route ("/", name="index")
+     * @Route ("/", name="app_index")
      * @param Request $request
      * @return Response
      * @throws NonUniqueResultException
@@ -65,7 +65,7 @@ class ProductController extends AbstractController
 
     /**
      * todo: it seems too complex, needs refactoring
-     * @Route ("/product/{id}", name="product", methods={"GET"})
+     * @Route ("/product/{id}", name="app_product", methods={"GET"})
      * @param Request $request
      * @return Response
      * @throws Exception
@@ -97,12 +97,12 @@ class ProductController extends AbstractController
     }
 
     /**
-     * @Route ("/get-time-limited-discount-data", name="get_time_limited_discount_data")
+     * @Route ("/time-limited-discount-data", name="app_time_limited_discount_data")
      * @param Request $request
      * @return JsonResponse
      * @throws NonUniqueResultException
      */
-    public function getTimeLimitedDiscountData(Request $request): JsonResponse
+    public function timeLimitedDiscountData(Request $request): JsonResponse
     {
         $productId = $request->get('productId');
         $discountDate = $request->get('discountDate');
@@ -120,12 +120,12 @@ class ProductController extends AbstractController
     }
 
     /**
-     * @Route ("/get-discount-data-by-year", name="get_discount_data_by_year")
+     * @Route ("/discount-data-by-year", name="app_discount_data_by_year")
      * @param Request $request
      * @return JsonResponse
      * @throws Exception
      */
-    public function getDiscountDataByYear(Request $request): JsonResponse
+    public function discountDataByYear(Request $request): JsonResponse
     {
         $productId = $request->get('productId');
         $year = $request->get('year');
@@ -153,7 +153,7 @@ class ProductController extends AbstractController
     /**
      *
      * todo: transfer query
-     * @Route ("/products", name="products")
+     * @Route ("/products", name="app_products")
      * @param Request $request
      * @return Response
      */
