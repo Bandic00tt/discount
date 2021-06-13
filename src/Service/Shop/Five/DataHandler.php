@@ -151,9 +151,7 @@ class DataHandler
             ->getQuery()
             ->getResult();
 
-        return array_map(function($item) {
-            return (int)$item['product_id'];
-        }, $res);
+        return array_column($res, 'product_id');
     }
 
     /**
@@ -204,9 +202,7 @@ class DataHandler
             ->getQuery()
             ->getResult();
 
-        return array_map(function($item) {
-            return (int)$item['discount_id'];
-        }, $res);
+        return array_column($res, 'discount_id');
     }
 
     /**

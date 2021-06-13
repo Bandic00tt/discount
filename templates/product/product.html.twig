@@ -13,7 +13,7 @@
                             <div class="product-item-wrapper">
                                 {% if product.productId in activeProductDiscounts|keys %}
                                     {% set discount = activeProductDiscounts[product.productId] %}
-                                    {% include '/site/partials/productCard.html.twig' with {
+                                    {% include '/product/partials/productCard.html.twig' with {
                                         'priceDiscount': discount.priceDiscount,
                                         'priceNormal': discount.priceNormal,
                                         'dateBegin': discount.dateBegin,
@@ -32,12 +32,15 @@
                             <small>{{ product.name }}</small>
                         </div>
                     </div>
+                    <div class="row mt-4">
+                        <a href="{{ path('index') }}">Назад к списку продуктов</a>
+                    </div>
                 </div>
             </div>
             <div class="col-lg-9">
                 {% for year in productDiscountYears %}
                     <div class="discount-history-wrapper">
-                        {% include '/site/partials/history.html.twig' with {
+                        {% include '/product/partials/history.html.twig' with {
                             'year': year,
                             'yearDates': datesByYears[year],
                             'product': product,

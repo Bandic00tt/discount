@@ -42,6 +42,12 @@ img.logo {
     padding: 0;
 }
 
+.discount-history-wrapper .history-year {
+    list-style-type: none;
+    display: inline;
+    padding: 0 3px;
+}
+
 .discount-cell:hover {
     cursor: pointer;
 }

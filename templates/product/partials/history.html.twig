@@ -1,7 +1,7 @@
 <div class="text-lg-end">
     <ul>
         {% for y in productDiscountYears  %}
-            <li style="list-style-type: none; display: inline">
+            <li class="history-year text-center">
                 {% if y == year %}
                     <span class="fw-bold">{{ y }}</span>
                 {% else %}
@@ -9,9 +9,7 @@
                        class="text-dark switch-year"
                        data-product_id="{{ product.productId }}"
                        data-year="{{ y }}"
-                    >
-                        {{ y }}
-                    </a>
+                    >{{ y }}</a>
                 {% endif %}
             </li>
         {% endfor %}
