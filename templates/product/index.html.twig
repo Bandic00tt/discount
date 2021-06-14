@@ -36,84 +36,79 @@
             </a>
         </div>
     </div>
-    <div class="products mt-2">
-        {% for product in products %}
-            {% set productDiscountYears = discountYears[product.productId]|default([]) %}
-            <div class="product-block mb-5">
-                <div class="row">
-                    <div class="col-lg-3">
-                        <div class="product-card pt-3">
-                            <div class="row">
-                                <div class="col">
-                                    <img src="{{ product.imgLink }}" class="img-fluid" alt="{{ product.name }}">
+    {% if products %}
+        {% include '/product/partials/pagination.html.twig' with {
+            'currentPage': currentPage,
+            'firstPage': firstPage,
+            'lastPage': lastPage,
+            'totalPages': totalPages,
+        } %}
+
+        <div class="products mt-2">
+            {% for product in products %}
+                {% set productDiscountYears = discountYears[product.productId]|default([]) %}
+                <div class="product-block mb-5">
+                    <div class="row">
+                        <div class="col-lg-3">
+                            <div class="product-card pt-3">
+                                <div class="row">
+                                    <div class="col">
+                                        <img src="{{ product.imgLink }}" class="img-fluid" alt="{{ product.name }}">
+                                    </div>
+                                    <div class="col">
+                                        <div class="product-item-wrapper">
+                                            {% if product.productId in activeProductDiscounts|keys %}
+                                                {% set discount = activeProductDiscounts[product.productId] %}
+                                                {% include '/product/partials/productCard.html.twig' with {
+                                                    'priceDiscount': discount.priceDiscount,
+                                                    'priceNormal': discount.priceNormal,
+                                                    'dateBegin': discount.dateBegin,
+                                                    'dateEnd': discount.dateEnd
+                                                } %}
+                                            {% else %}
+                                                <div class="pt-3 text-center">
+                                                    К сожалению, на данный момент по этому продукту нет выгодных предложений
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
                                 </div>
-                                <div class="col">
-                                    <div class="product-item-wrapper">
-                                        {% if product.productId in activeProductDiscounts|keys %}
-                                            {% set discount = activeProductDiscounts[product.productId] %}
-                                            {% include '/product/partials/productCard.html.twig' with {
-                                                'priceDiscount': discount.priceDiscount,
-                                                'priceNormal': discount.priceNormal,
-                                                'dateBegin': discount.dateBegin,
-                                                'dateEnd': discount.dateEnd
-                                            } %}
-                                        {% else %}
-                                            <div class="pt-3 text-center">
-                                                К сожалению, на данный момент по этому продукту нет выгодных предложений
-                                            </div>
-                                        {% endif %}
+                                <div class="row">
+                                    <div class="col">
+                                        <small>
+                                            {% if productDiscountYears|length > 1 %}
+                                                <a href="{{ path('app_product', {'id': product.productId}) }}">{{ product.name }}</a>
+                                            {% else %}
+                                                {{ product.name }}
+                                            {% endif %}
+                                        </small>
                                     </div>
                                 </div>
                             </div>
-                            <div class="row">
-                                <div class="col">
-                                    <small>
-                                        {% if productDiscountYears|length > 1 %}
-                                            <a href="{{ path('app_product', {'id': product.productId}) }}">{{ product.name }}</a>
-                                        {% else %}
-                                            {{ product.name }}
-                                        {% endif %}
-                                    </small>
-                                </div>
+                        </div>
+                        <div class="col-lg-9">
+                            <div class="discount-history-wrapper">
+                                {% set productDiscountDates = discountDates[product.productId]|default([]) %}
+                                {% include '/product/partials/history.html.twig' with {
+                                    'year': year,
+                                    'yearDates': yearDates,
+                                    'product': product,
+                                    'productDiscountDates': productDiscountDates,
+                                    'productDiscountYears': productDiscountYears,
+                                } %}
                             </div>
                         </div>
                     </div>
-                    <div class="col-lg-9">
-                        <div class="discount-history-wrapper">
-                            {% set productDiscountDates = discountDates[product.productId]|default([]) %}
-                            {% include '/product/partials/history.html.twig' with {
-                                'year': year,
-                                'yearDates': yearDates,
-                                'product': product,
-                                'productDiscountDates': productDiscountDates,
-                                'productDiscountYears': productDiscountYears,
-                            } %}
-                        </div>
-                    </div>
                 </div>
-            </div>
-        {% endfor %}
-    </div>
-
-    {% if pages %}
-        <div class="products-pagination">
-            <ul class="list-group list-group-horizontal">
-                {% for page in 1..pages %}
-                    {% set pageRouteParams = {'page': page} %}
-                    {% if app.request.query.get('q') %}
-                        {% set pageRouteParams = pageRouteParams|merge({'q': app.request.query.get('q')}) %}
-                    {% endif %}
-
-                    <li class="list-group-item {{ page == currentPage ? 'bg-primary' : '' }}">
-                        <a href="{{ path('app_index', pageRouteParams) }}"
-                           class="product-page {{ page == currentPage ? 'active-page' : '' }}"
-                        >
-                            {{ page }}
-                        </a>
-                    </li>
-                {% endfor %}
-            </ul>
+            {% endfor %}
         </div>
+
+        {% include '/product/partials/pagination.html.twig' with {
+            'currentPage': currentPage,
+            'firstPage': firstPage,
+            'lastPage': lastPage,
+            'totalPages': totalPages,
+        } %}
     {% else %}
         <div class="text-center fs-3">
             К сожалению, информации по скидкам в выбранном городе у нас пока нет ;-( <br>

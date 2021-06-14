@@ -18,6 +18,8 @@ use Symfony\Component\Routing\Annotation\Route;
 
 class ProductController extends AbstractController
 {
+    private const PAGINATION_SIZE = 20;
+
     private EntityManagerInterface $em;
     private DiscountHelper $discountHelper;
     private int $locationId;
@@ -41,9 +43,23 @@ class ProductController extends AbstractController
     {
         $page = (int) $request->get('page', 1);
         $searchQuery = $request->get('q');
-
+        // Пагинация
         $totalProducts = $this->discountHelper->getTotalProducts($this->locationId, $searchQuery);
-        $pages = ceil($totalProducts / DiscountHelper::MAX_RESULTS);
+        $totalPages = ceil($totalProducts / DiscountHelper::MAX_RESULTS);
+        $firstPage = 1;
+        $lastPage = min($totalPages, self::PAGINATION_SIZE);
+
+        if ($totalPages > $lastPage && $page > self::PAGINATION_SIZE / 2) {
+            if (($page + self::PAGINATION_SIZE / 2) < $totalPages) {
+                $lastPage = $page + self::PAGINATION_SIZE / 2;
+            } else {
+                $lastPage = $totalPages;
+            }
+
+            $firstPage = $lastPage - self::PAGINATION_SIZE;
+        }
+
+        // todo: переместить выборки в специальные классы
         $products =  $this->discountHelper->getProducts($this->locationId, $page, $searchQuery);
         $discountHistory = $this->discountHelper->getDiscountHistory($this->locationId, $products);
         $year = date('Y');
@@ -54,8 +70,10 @@ class ProductController extends AbstractController
 
         return $this->render('/product/index.html.twig', [
             'products' => $products,
-            'pages' => $pages,
             'currentPage' => $page,
+            'firstPage' => $firstPage,
+            'lastPage' => $lastPage,
+            'totalPages' => $totalPages,
             'year' => $year,
             'yearDates' => $yearDates,
             'discountDates' => $discountDates,
