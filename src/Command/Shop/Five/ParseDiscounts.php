@@ -17,14 +17,14 @@ class ParseDiscounts extends Command
 
     private ApiClient $apiClient;
     private DataHandler $dataHandler;
-    private int $locationId;
+    private City $location;
 
     public function __construct(ApiClient $apiClient, DataHandler $dataHandler)
     {
         parent::__construct();
         $this->apiClient = $apiClient;
         $this->dataHandler = $dataHandler;
-        $this->locationId = $this->getLocationId();
+        $this->location = $this->getLocation();
     }
 
     /**
@@ -37,13 +37,16 @@ class ParseDiscounts extends Command
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         // Очищаем старые неактуальные данные
-        $this->dataHandler->clearDiscounts($this->locationId);
+        echo "Started discount parsing for location: {$this->location->getName()}\n";
+
+        $cityId = $this->location->getCityId();
+        $this->dataHandler->clearDiscounts($cityId);
 
         $results = [];
         $page = 1;
         while (true) {
             $data = json_decode(
-                $this->apiClient->getDiscounts($this->locationId, $page),
+                $this->apiClient->getDiscounts($cityId, $page),
                 JSON_UNESCAPED_UNICODE
             );
 
@@ -64,25 +67,26 @@ class ParseDiscounts extends Command
         }
 
         // Логируем данные на случай если что-то пойдет не так
-        $this->dataHandler->logDiscounts($this->locationId, $results);
+        $this->dataHandler->logDiscounts($cityId, $results);
         // Сохраняем свежие данные по скидкам
-        $totalSaved = $this->dataHandler->updateDiscounts($this->locationId, $results);
+        $totalSaved = $this->dataHandler->updateDiscounts($cityId, $results);
         echo "Saved $totalSaved records from $page pages \n";
         // Сохраняем товары для каталога (справочника)
-        $totalNew = $this->dataHandler->updateProducts($this->locationId, $results);
+        $totalNew = $this->dataHandler->updateProducts($cityId, $results);
         echo "Saved $totalNew new products \n";
         // Обновляем историю скидок
-        $totalHistory = $this->dataHandler->updateHistory($this->locationId, $results);
+        $totalHistory = $this->dataHandler->updateHistory($cityId, $results);
         echo "Saved $totalHistory history rows \n";
 
         return 0;
     }
 
     /**
-     * @return int
-     * @throws NonUniqueResultException|EntityNotFoundException
+     * @return City
+     * @throws EntityNotFoundException
+     * @throws NonUniqueResultException
      */
-    public function getLocationId(): int
+    public function getLocation(): City
     {
         /** @var City $location */
         $location = $this->dataHandler->em
@@ -101,7 +105,7 @@ class ParseDiscounts extends Command
             $this->dataHandler->em->flush();
             $this->dataHandler->em->clear();
 
-            return $location->getCityId();
+            return $location;
         }
 
         throw new EntityNotFoundException('City not found');
