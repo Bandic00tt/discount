@@ -4,18 +4,32 @@
         {% if app.request.query.get('q') %}
             {% set params = params|merge({'q': app.request.query.get('q')}) %}
         {% endif %}
-        {# Ссылка на предыдущую страницу #}
-        {% if currentPage > 1 %}
-            <div class="col-1">
-                {% set params = params|merge({'page': currentPage - 1}) %}
-                <div class="d-grid gap-2">
-                    <a href="{{ path('app_index', params) }}" class="btn btn-success" title="На предыдущую страницу">
-                        <i class="fa fa-angle-double-left"></i>
-                    </a>
-                </div>
-            </div>
-        {% endif %}
-        <div class="{{ currentPage > 1 ? 'col-10': 'col-11' }} d-flex justify-content-center">
+
+        <div class="col-1">
+            <table>
+                <tr>
+                    <td>
+                        {# Ссылка на первую страницу, когда она нужна #}
+                        {% if firstPage > 1 %}
+                            {% set params = params|merge({'page': 1}) %}
+                            <a href="{{ path('app_index', params) }}" class="btn btn-success" title="На первую страницу">
+                                <i class="fa fa-fast-backward"></i>
+                            </a>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {# Ссылка на предыдущую страницу #}
+                        {% if currentPage > 1 %}
+                            {% set params = params|merge({'page': currentPage - 1}) %}
+                            <a href="{{ path('app_index', params) }}" class="btn btn-success" title="На предыдущую страницу">
+                                <i class="fa fa-angle-double-left"></i>
+                            </a>
+                        {% endif %}
+                    </td>
+                </tr>
+            </table>
+        </div>
+        <div class="col-10 d-flex justify-content-center">
             {% if totalPages > 1 %}
                 <ul class="list-group list-group-horizontal">
                     {% for page in firstPage..lastPage %}
@@ -31,16 +45,29 @@
                 </ul>
             {% endif %}
         </div>
-        {# Ссылка на следующую страницу #}
-        {% if currentPage < totalPages %}
-            <div class="col-1 text-end">
-                {% set params = params|merge({'page': currentPage + 1}) %}
-                <div class="d-grid gap-2">
-                    <a href="{{ path('app_index', params) }}" class="btn btn-success" title="На следующую страницу">
-                        <i class="fa fa-angle-double-right"></i>
-                    </a>
-                </div>
-            </div>
-        {% endif %}
+        <div class="col-1 text-end">
+            <table>
+                <tr>
+                    <td>
+                        {# Ссылка на следующую страницу #}
+                        {% if currentPage < totalPages %}
+                            {% set params = params|merge({'page': currentPage + 1}) %}
+                            <a href="{{ path('app_index', params) }}" class="btn btn-success" title="На следующую страницу">
+                                <i class="fa fa-angle-double-right"></i>
+                            </a>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {# Ссылка на последнюю страницу, когда она нужна #}
+                        {% if lastPage < totalPages %}
+                            {% set params = params|merge({'page': totalPages}) %}
+                            <a href="{{ path('app_index', params) }}" class="btn btn-success" title="На последнюю страницу">
+                                <i class="fa fa-fast-forward"></i>
+                            </a>
+                        {% endif %}
+                    </td>
+                </tr>
+            </table>
+        </div>
     </div>
 </div>
