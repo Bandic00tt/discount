@@ -99,7 +99,7 @@ class DataHandler
         $existingProductIdsForUpdate = [];
         foreach ($results as $result) {
             $productId = (int)$result['plu'];
-            if (in_array($productId, $existingProductIds, true)) {
+            if (in_array($productId, $existingProductIds, false)) {
                 $existingProductIdsForUpdate[] = $productId;
                 continue;
             }
@@ -168,7 +168,7 @@ class DataHandler
         $existingDiscountIds = $this->getExistingDiscountIds($locationId);
         foreach ($results as $result) {
             $discountId = (int)$result['promo']['id'];
-            if (in_array($discountId, $existingDiscountIds, true)) {
+            if (in_array($discountId, $existingDiscountIds, false)) {
                 continue;
             }
 
@@ -195,7 +195,7 @@ class DataHandler
     /**
      * @return int[]
      */
-    private function getExistingDiscountIds(int $locationId): array
+    public function getExistingDiscountIds(int $locationId): array
     {
         $res = $this->em->createQueryBuilder()
             ->select(['dh.discount_id'])

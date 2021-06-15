@@ -17,14 +17,17 @@ class ParseDiscounts extends Command
 
     private ApiClient $apiClient;
     private DataHandler $dataHandler;
-    private City $location;
 
     public function __construct(ApiClient $apiClient, DataHandler $dataHandler)
     {
         parent::__construct();
         $this->apiClient = $apiClient;
         $this->dataHandler = $dataHandler;
-        $this->location = $this->getLocation();
+    }
+
+    protected function configure()
+    {
+        $this->addArgument('locationId');
     }
 
     /**
@@ -32,14 +35,18 @@ class ParseDiscounts extends Command
      * @param InputInterface $input
      * @param OutputInterface $output
      * @return int
+     * @throws EntityNotFoundException
      * @throws GuzzleException
+     * @throws NonUniqueResultException
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        // Очищаем старые неактуальные данные
-        echo "Started discount parsing for location: {$this->location->getName()}\n";
+        $location = $this->getLocation($input->getArgument('locationId'));
 
-        $cityId = $this->location->getCityId();
+        echo "Started discount parsing for location: {$location->getName()}\n";
+
+        $cityId = $location->getCityId();
+        // Очищаем старые неактуальные данные
         $this->dataHandler->clearDiscounts($cityId);
 
         $results = [];
@@ -82,23 +89,30 @@ class ParseDiscounts extends Command
     }
 
     /**
+     * @param int|null $locationId
      * @return City
      * @throws EntityNotFoundException
      * @throws NonUniqueResultException
      */
-    public function getLocation(): City
+    public function getLocation(?int $locationId): City
     {
-        /** @var City $location */
-        $location = $this->dataHandler->em
+        $query = $this->dataHandler->em
             ->createQueryBuilder()
             ->select('c')
-            ->from(City::class, 'c')
-            ->andWhere('c.city_id in (:cityIds)')
-            ->setParameter('cityIds', array_keys(DataHandler::CITIES))
-            ->orderBy('c.updated_at', 'ASC')
-            ->setMaxResults(1)
-            ->getQuery()
-            ->getOneOrNullResult();
+            ->from(City::class, 'c');
+
+        if ($locationId) {
+            $query->andWhere('c.city_id = :cityId')
+                ->setParameter('cityId', $locationId);
+        } else {
+            $query->andWhere('c.city_id in (:cityIds)')
+                ->setParameter('cityIds', array_keys(DataHandler::CITIES));
+        }
+            $query->orderBy('c.updated_at', 'ASC')
+            ->setMaxResults(1);
+
+        /** @var City $location */
+        $location = $query->getQuery()->getOneOrNullResult();
 
         if ($location) {
             $location->setUpdatedAt(time());
