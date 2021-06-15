@@ -15,36 +15,44 @@ class City
      * @ORM\GeneratedValue
      * @ORM\Column(type="integer")
      */
-    private $id;
+    private ?int $id;
 
     /**
      * @ORM\Column(type="integer")
      */
-    private $region_id;
+    private ?int $region_id;
 
     /**
      * @ORM\Column(type="integer")
      */
-    private $city_id;
+    private ?int $city_id;
 
     /**
      * @ORM\Column(type="string", length=255)
      */
-    private $name;
+    private ?string $name;
 
     /**
      * @ORM\Column(type="integer")
      */
-    private $created_at;
+    private ?int $created_at;
 
     /**
      * @ORM\Column(type="integer")
      */
-    private $updated_at;
+    private ?int $updated_at;
 
     public function getId(): ?int
     {
         return $this->id;
+    }
+
+    /**
+     * @param mixed $id
+     */
+    public function setId($id): void
+    {
+        $this->id = $id;
     }
 
     public function getRegionId(): ?int

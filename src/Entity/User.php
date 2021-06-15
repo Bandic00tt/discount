@@ -19,32 +19,40 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      * @ORM\GeneratedValue
      * @ORM\Column(type="integer")
      */
-    private $id;
+    private ?int $id;
 
     /**
      * @ORM\Column(type="string", length=180, unique=true)
      */
-    private $email;
+    private ?string $email;
 
     /**
      * @ORM\Column(type="json")
      */
-    private $roles = [];
+    private array $roles = [];
 
     /**
      * @var string The hashed password
      * @ORM\Column(type="string")
      */
-    private $password;
+    private string $password;
 
     /**
      * @ORM\Column(type="boolean")
      */
-    private $isVerified = false;
+    private bool $isVerified = false;
 
     public function getId(): ?int
     {
         return $this->id;
+    }
+
+    /**
+     * @param mixed $id
+     */
+    public function setId($id): void
+    {
+        $this->id = $id;
     }
 
     public function getEmail(): ?string
@@ -52,6 +60,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this->email;
     }
 
+    /** @noinspection PhpUnused */
     public function setEmail(string $email): self
     {
         $this->email = $email;
@@ -128,6 +137,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         // TODO: Implement getUsername() method.
     }
 
+    /** @noinspection PhpUnused */
     public function isVerified(): bool
     {
         return $this->isVerified;

@@ -15,26 +15,34 @@ class Region
      * @ORM\GeneratedValue
      * @ORM\Column(type="integer")
      */
-    private $id;
+    private ?int $id;
 
     /**
      * @ORM\Column(type="integer")
      */
-    private $region_id;
+    private ?int $region_id;
 
     /**
      * @ORM\Column(type="string", length=255)
      */
-    private $name;
+    private ?string $name;
 
     /**
      * @ORM\Column(type="integer")
      */
-    private $saved_at;
+    private ?int $saved_at;
 
     public function getId(): ?int
     {
         return $this->id;
+    }
+
+    /**
+     * @param mixed $id
+     */
+    public function setId($id): void
+    {
+        $this->id = $id;
     }
 
     public function getRegionId(): ?int
@@ -61,6 +69,7 @@ class Region
         return $this;
     }
 
+    /** @noinspection PhpUnused */
     public function getSavedAt(): ?int
     {
         return $this->saved_at;

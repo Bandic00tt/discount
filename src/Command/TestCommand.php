@@ -12,7 +12,7 @@ class TestCommand extends Command
 {
     protected static $defaultName = 'app:test';
 
-    private $mailer;
+    private MailerInterface $mailer;
 
     /**
      * TestCommand constructor.

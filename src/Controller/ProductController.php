@@ -8,7 +8,6 @@ use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\NonUniqueResultException;
 use Doctrine\ORM\NoResultException;
 use Doctrine\ORM\Query\QueryException;
-use Doctrine\ORM\Tools\Pagination\Paginator;
 use Exception;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -143,6 +142,7 @@ class ProductController extends AbstractController
      * @param Request $request
      * @return JsonResponse
      * @throws Exception
+     * @noinspection PhpUnused
      */
     public function discountDataByYear(Request $request): JsonResponse
     {

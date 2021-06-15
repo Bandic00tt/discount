@@ -15,31 +15,39 @@ class DiscountLog
      * @ORM\GeneratedValue
      * @ORM\Column(type="integer")
      */
-    private $id;
+    private ?int $id;
 
     /**
      * @ORM\Column(type="integer")
      */
-    private $location_id;
+    private ?int $location_id;
 
     /**
      * @ORM\Column(type="json")
      */
-    private $data = [];
+    private array $data = [];
 
     /**
      * @ORM\Column(type="integer")
      */
-    private $size;
+    private ?int $size;
 
     /**
      * @ORM\Column(type="integer")
      */
-    private $saved_at;
+    private ?int $saved_at;
 
     public function getId(): ?int
     {
         return $this->id;
+    }
+
+    /**
+     * @param mixed $id
+     */
+    public function setId($id): void
+    {
+        $this->id = $id;
     }
 
     public function getLocationId(): ?int
@@ -78,6 +86,7 @@ class DiscountLog
         return $this;
     }
 
+    /** @noinspection PhpUnused */
     public function getSavedAt(): ?int
     {
         return $this->saved_at;

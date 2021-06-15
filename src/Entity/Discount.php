@@ -15,61 +15,69 @@ class Discount
      * @ORM\GeneratedValue
      * @ORM\Column(type="integer")
      */
-    private $id;
+    private ?int $id;
 
     /**
      * @ORM\Column(type="integer")
      */
-    private $location_id;
+    private ?int $location_id;
 
     /**
      * @ORM\Column(type="integer")
      */
-    private $product_id;
+    private ?int $product_id;
 
     /**
      * @ORM\Column(type="bigint")
      */
-    private $discount_id;
+    private ?int $discount_id;
 
     /**
      * @ORM\Column(type="string", length=512)
      */
-    private $name;
+    private ?string $name;
 
     /**
      * @ORM\Column(type="text", nullable=true)
      */
-    private $img_link;
+    private ?string $img_link;
 
     /**
      * @ORM\Column(type="integer")
      */
-    private $date_begin;
+    private ?int $date_begin;
 
     /**
      * @ORM\Column(type="integer")
      */
-    private $date_end;
+    private ?int $date_end;
 
     /**
      * @ORM\Column(type="decimal", precision=10, scale=2)
      */
-    private $price_discount;
+    private ?string $price_discount;
 
     /**
      * @ORM\Column(type="decimal", precision=10, scale=2)
      */
-    private $price_normal;
+    private ?string $price_normal;
 
     /**
      * @ORM\Column(type="integer")
      */
-    private $saved_at;
+    private ?int $saved_at;
 
     public function getId(): ?int
     {
         return $this->id;
+    }
+
+    /**
+     * @param mixed $id
+     */
+    public function setId($id): void
+    {
+        $this->id = $id;
     }
 
     public function getLocationId(): ?int
@@ -120,6 +128,7 @@ class Discount
         return $this;
     }
 
+    /** @noinspection PhpUnused */
     public function getImgLink(): ?string
     {
         return $this->img_link;
@@ -132,6 +141,7 @@ class Discount
         return $this;
     }
 
+    /** @noinspection PhpUnused */
     public function getDateBegin(): ?int
     {
         return $this->date_begin;
@@ -144,6 +154,7 @@ class Discount
         return $this;
     }
 
+    /** @noinspection PhpUnused */
     public function getDateEnd(): ?int
     {
         return $this->date_end;
@@ -156,6 +167,7 @@ class Discount
         return $this;
     }
 
+    /** @noinspection PhpUnused */
     public function getPriceDiscount(): ?string
     {
         return $this->price_discount;
@@ -180,6 +192,7 @@ class Discount
         return $this;
     }
 
+    /** @noinspection PhpUnused */
     public function getSavedAt(): ?int
     {
         return $this->saved_at;

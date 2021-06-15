@@ -40,6 +40,7 @@ class SiteController extends AbstractController
      * @Route ("/select-city/{id}", name="app_select_city", methods={"GET"})
      * @param Request $request
      * @return RedirectResponse
+     * @noinspection PhpUnused
      */
     public function selectCity(Request $request): RedirectResponse
     {
