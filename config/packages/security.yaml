@@ -1,5 +1,6 @@
 security:
-  encoders:
+  enable_authenticator_manager: true
+  password_hashers:
     App\Entity\User:
       algorithm: auto
 
@@ -15,15 +16,13 @@ security:
       pattern: ^/(_(profiler|wdt)|css|images|js)/
       security: false
     main:
-      anonymous: true
       lazy: true
       logout:
         path: app_logout
         # where to redirect after logout
-        target: index
-      guard:
-        authenticators:
-          - App\Security\LoginFormAuthenticator
+        target: app_index
+      custom_authenticators:
+        - App\Security\LoginFormAuthenticator
 
       # activate different ways to authenticate
       # https://symfony.com/doc/current/security.html#firewalls-authentication
