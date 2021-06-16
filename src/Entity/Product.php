@@ -38,6 +38,11 @@ class Product
     private ?string $img_link;
 
     /**
+     * @ORM\Column(type="boolean")
+     */
+    private ?bool $is_img_local;
+
+    /**
      * @ORM\Column(type="integer")
      */
     private ?int $created_at;
@@ -109,6 +114,18 @@ class Product
         return $this;
     }
 
+    public function getIsImgLocal(): ?bool
+    {
+        return $this->is_img_local;
+    }
+
+    public function setIsImgLocal(bool $is_img_local): self
+    {
+        $this->is_img_local = $is_img_local;
+
+        return $this;
+    }
+
     public function getCreatedAt(): ?int
     {
         return $this->created_at;
@@ -131,5 +148,19 @@ class Product
         $this->updated_at = $updated_at;
 
         return $this;
+    }
+
+    // END OF GETTERS AND SETTERS
+
+    /**
+     * @return string
+     */
+    public function getImgPathLink(): string
+    {
+        if ($this->getIsImgLocal() === 0) {
+            return $this->getImgLink();
+        }
+
+        return '/img/products/'. pathinfo($this->getImgLink())['basename'];
     }
 }

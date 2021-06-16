@@ -97,7 +97,7 @@ class ProductController extends AbstractController
             ->findOneBy(['product_id' => $productId]);
         $activeProductDiscounts = $this->discountHelper->getActiveProductDiscounts([$product]);
         $discountHistory = $this->discountHelper->getDiscountHistory($this->locationId, [$product]);
-        $productDiscountYears = $this->discountHelper->getDiscountYears($discountHistory)[$productId];
+        $productDiscountYears = $this->discountHelper->getDiscountYears($discountHistory)[$productId] ?? [];
         $datesByYears = [];
         $productDiscountDatesByYears = [];
         foreach ($productDiscountYears as $year) {
