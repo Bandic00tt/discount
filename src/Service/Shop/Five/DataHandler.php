@@ -109,6 +109,7 @@ class DataHandler
             $entity->setProductId($productId);
             $entity->setName($result['name']);
             $entity->setImgLink($result['img_link']);
+            $entity->setIsImgLocal(0);
             $entity->setCreatedAt(time());
             $entity->setUpdatedAt(time());
 
