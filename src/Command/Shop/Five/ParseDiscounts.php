@@ -52,10 +52,7 @@ class ParseDiscounts extends Command
         $results = [];
         $page = 1;
         while (true) {
-            $data = json_decode(
-                $this->apiClient->getDiscounts($cityId, $page),
-                JSON_UNESCAPED_UNICODE
-            );
+            $data = json_decode($this->apiClient->getDiscounts($cityId, $page), true);
 
             if (empty($data['results'])) {
                 echo "Parsing finished\n";

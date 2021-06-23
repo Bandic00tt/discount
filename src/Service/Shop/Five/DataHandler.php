@@ -300,4 +300,23 @@ class DataHandler
             ->getQuery()
             ->execute();
     }
+
+    /**
+     * @param int $categoryId
+     * @param array $results
+     * @return int
+     */
+    public function getNumberOfCategorizedProducts(int $categoryId, array $results): int
+    {
+        $productIds = array_column($results, 'plu');
+
+        return $this->em
+            ->createQueryBuilder()
+            ->update(Product::class, 'p')
+            ->set('p.category_id', $categoryId)
+            ->andWhere('p.product_id in (:productIds)')
+            ->setParameters(['productIds' => $productIds])
+            ->getQuery()
+            ->execute();
+    }
 }

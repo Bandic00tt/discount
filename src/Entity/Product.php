@@ -23,6 +23,11 @@ class Product
     private ?int $location_id;
 
     /**
+     * @ORM\Column(type="integer", nullable=true)
+     */
+    private ?int $category_id;
+
+    /**
      * @ORM\Column(type="integer")
      */
     private ?int $product_id;
@@ -73,6 +78,18 @@ class Product
     public function setLocationId(int $location_id): self
     {
         $this->location_id = $location_id;
+
+        return $this;
+    }
+
+    public function getCategoryId(): ?int
+    {
+        return $this->category_id;
+    }
+
+    public function setCategoryId(?int $category_id): self
+    {
+        $this->category_id = $category_id;
 
         return $this;
     }
