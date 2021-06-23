@@ -1,4 +1,7 @@
 {
+    "imagine/imagine": {
+        "version": "1.2.4"
+    },
     "symfonycasts/reset-password-bundle": {
         "version": "1.0",
         "recipe": {

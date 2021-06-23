@@ -12,6 +12,8 @@ class DownloadImages extends Command
 {
     const PRODUCTS_PER_QUERY = 20;
     const PRODUCT_IMAGES_PATH = __DIR__ .'/../../../../public/img/products/'; // todo: use root dir alias
+    public const IMAGE_WIDTH   = 720;
+    public const IMAGE_QUALITY = 100;
 
     protected static $defaultName = 'shop:five:download:images';
     private EntityManagerInterface $em;
