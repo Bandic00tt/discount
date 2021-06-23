@@ -2,6 +2,7 @@
 
 namespace App\Service\Shop\Five;
 
+use App\Entity\Category;
 use App\Entity\City;
 use App\Entity\Discount;
 use App\Entity\DiscountHistory;
@@ -289,5 +290,14 @@ class DataHandler
         $this->em->clear();
 
         return $total;
+    }
+
+    public function clearParentCategories()
+    {
+        $this->em->createQueryBuilder()
+            ->delete(Category::class, 'c')
+            ->where('c.category_id is NULL')
+            ->getQuery()
+            ->execute();
     }
 }
