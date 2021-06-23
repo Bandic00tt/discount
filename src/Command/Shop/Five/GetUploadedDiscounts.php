@@ -36,6 +36,7 @@ class GetUploadedDiscounts extends Command
 
         $yandexDisk = new YandexDisk($_ENV['YD_TOKEN'], $uploadedFileName);
         $results = json_decode($yandexDisk->downloadFile(), true);
+        $yandexDisk->deleteFile($uploadedFileName);
 
         // Логируем данные на случай если что-то пойдет не так
         $this->dataHandler->logDiscounts($cityId, $results);

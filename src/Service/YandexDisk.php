@@ -33,6 +33,25 @@ class YandexDisk
     }
 
     /**
+     * @param string $fileName
+     * @return string
+     * @throws GuzzleException
+     */
+    public function deleteFile(string $fileName): string
+    {
+        $res = $this->client->request('DELETE', self::ROOT_URL, [
+            'headers' => [
+                'Authorization' => 'OAuth '. $this->token,
+            ],
+            'query' => [
+                'path' => self::REMOTE_DIR . $fileName,
+            ]
+        ]);
+
+        return (string)$res->getStatusCode();
+    }
+
+    /**
      * @param string $apiLink
      * @param string $method
      * @return string
