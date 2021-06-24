@@ -281,6 +281,7 @@ class DataHandler
             $entity->setCityId($city['id']);
             $entity->setName($city['name']);
             $entity->setCreatedAt(time());
+            $entity->setUpdatedAt(time());
 
             $this->em->persist($entity);
             ++$total;

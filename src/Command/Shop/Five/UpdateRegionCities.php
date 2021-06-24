@@ -36,6 +36,6 @@ class UpdateRegionCities extends Command
 
         echo "Got $result region cities\n";
 
-        return $result;
+        return 0;
     }
 }
