@@ -14,28 +14,6 @@ use Doctrine\ORM\EntityManagerInterface;
 class DataHandler
 {
     public const MOSCOW_ID = 8145;
-    public const PITER_ID = 8169;
-    public const KAZAN_ID = 8185;
-    public const NN_ID = 8163;
-    public const SAMARA_ID = 8131;
-    public const ROSTOV_ID = 8278;
-    public const VORONEZH_ID = 8234;
-    public const VOLGOGRAD_ID = 8403;
-    public const CHEBOKSARY_ID = 8238;
-    public const NOVCHIK_ID = 8262;
-
-    public const CITIES = [
-        self::MOSCOW_ID => 'Москва',
-        self::PITER_ID => 'Санкт-Петербург',
-        self::KAZAN_ID => 'Казань',
-        self::NN_ID => 'Нижний Новгород',
-        self::SAMARA_ID => 'Самара',
-        self::ROSTOV_ID => 'Ростов-на-Дону',
-        self::VORONEZH_ID => 'Воронеж',
-        self::VOLGOGRAD_ID => 'Волгоград',
-        self::CHEBOKSARY_ID => 'Чебоксары',
-        self::NOVCHIK_ID => 'Новочебоксарск',
-    ];
 
     public EntityManagerInterface $em;
 

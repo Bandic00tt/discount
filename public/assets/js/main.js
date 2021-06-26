@@ -11,12 +11,12 @@ $(function(){
 
     const locationId = Cookies.get('discountLocationId');
     if (locationId === undefined) {
-        $.get('/cities', viewCities, 'json');
+        $.get('/cities-partial', viewCities, 'json');
     }
 
     $(document).on('click', '.select-city', function (e){
         e.preventDefault();
-        $.get('/cities', viewCities, 'json');
+        $.get('/cities-partial', viewCities, 'json');
         return false;
     });
 

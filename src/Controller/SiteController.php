@@ -15,11 +15,11 @@ use Symfony\Component\Routing\Annotation\Route;
 class SiteController extends AbstractController
 {
     /**
-     * @Route ("/cities", name="app_cities", methods={"GET"}, priority="1")
+     * @Route ("/cities-partial", name="app_cities_partial", methods={"GET"}, priority="1")
      * @param Request $request
      * @return JsonResponse
      */
-    public function cities(Request $request): JsonResponse
+    public function citiesPartial(Request $request): JsonResponse
     {
         $query = $request->get('query');
         $html = $this->renderView('/site/_partials/cities.html.twig', [
@@ -62,6 +62,19 @@ class SiteController extends AbstractController
         setcookie('discountLocationId', $cityId, time() + 604800 * 52, '/');
 
         return $this->redirectToRoute('app_index');
+    }
+
+    /**
+     * @Route ("/cities", name="app_cities", methods={"GET"}, priority="1")
+     * @return Response
+     */
+    public function cities(): Response
+    {
+        $cities = Cities::list();
+
+        return $this->render('/site/cities.html.twig', [
+            'cities' => $cities,
+        ]);
     }
 
     /**

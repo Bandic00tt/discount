@@ -40,13 +40,16 @@
                 <div class="collapse navbar-collapse" id="navbarNav">
                     <ul class="navbar-nav">
                         <li class="nav-item active">
-                            <a class="nav-link" href="{{ path('app_index') }}">Главная</a>
+                            <a href="{{ path('app_index') }}" class="nav-link">Главная</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="{{ path('app_products') }}">Каталог</a>
+                            <a href="{{ path('app_products') }}" class="nav-link">Каталог</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="{{ path('app_feedback') }}">Обратная связь</a>
+                            <a href="{{ path('app_cities') }}" class="nav-link">Скидки по городам</a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{{ path('app_feedback') }}" class="nav-link">Обратная связь</a>
                         </li>
                     </ul>
                 </div>
@@ -65,7 +68,7 @@
                     </div>
                     <div class="modal-body">
                         <div>
-                            <form action="{{ path("app_cities") }}">
+                            <form action="{{ path("app_cities_partial") }}">
                                 <div>
                                     <label for="search-cities-input"></label>
                                     <input type="text"

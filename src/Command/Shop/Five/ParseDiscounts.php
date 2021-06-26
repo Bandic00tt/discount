@@ -3,6 +3,7 @@ namespace App\Command\Shop\Five;
 
 use App\Entity\City;
 use App\Service\Shop\Five\ApiClient;
+use App\ValueObject\Cities;
 use Doctrine\ORM\EntityNotFoundException;
 use Doctrine\ORM\NonUniqueResultException;
 use GuzzleHttp\Exception\GuzzleException;
@@ -103,7 +104,7 @@ class ParseDiscounts extends Command
                 ->setParameter('cityId', $locationId);
         } else {
             $query->andWhere('c.city_id in (:cityIds)')
-                ->setParameter('cityIds', array_keys(DataHandler::CITIES));
+                ->setParameter('cityIds', array_keys(Cities::list()));
         }
             $query->orderBy('c.updated_at', 'ASC')
             ->setMaxResults(1);
