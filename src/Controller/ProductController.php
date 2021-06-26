@@ -149,7 +149,7 @@ class ProductController extends AbstractController
 
         $discountHistory = $this->discountHelper->getTimeLimitedDiscountData($productId, $discountDate);
 
-        $view = $this->renderView('/product/partials/productCard.html.twig', [
+        $view = $this->renderView('/product/_partials/productCard.html.twig', [
             'priceDiscount' => $discountHistory->getPriceDiscount(),
             'priceNormal' => $discountHistory->getPriceNormal(),
             'dateBegin' => date('d.m.Y', $discountHistory->getDateBegin()),
@@ -180,7 +180,7 @@ class ProductController extends AbstractController
         $productDiscountDates = $this->discountHelper->getDiscountDates($year, $discountHistory)[$productId];
         $productDiscountYears = $this->discountHelper->getDiscountYears($discountHistory)[$productId];
 
-        $view = $this->renderView('/product/partials/history.html.twig', [
+        $view = $this->renderView('/product/_partials/history.html.twig', [
             'year' => $year,
             'yearDates' => $yearDates,
             'product' => $product,

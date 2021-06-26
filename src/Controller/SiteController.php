@@ -22,7 +22,7 @@ class SiteController extends AbstractController
     public function cities(Request $request): JsonResponse
     {
         $query = $request->get('query');
-        $html = $this->renderView('/site/cities.html.twig', [
+        $html = $this->renderView('/site/_partials/cities.html.twig', [
             'cities' => $this->getCities($query),
         ]);
 
