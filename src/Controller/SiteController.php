@@ -14,20 +14,7 @@ use Symfony\Component\Routing\Annotation\Route;
 class SiteController extends AbstractController
 {
     /**
-     * @Route ("/city", name="app_city", methods={"GET"})
-     * @param Request $request
-     * @return JsonResponse
-     */
-    public function city(Request $request): JsonResponse
-    {
-        $cityId = (int) $request->get('cityId');
-        $cityName = DataHandler::CITIES[$cityId] ?? DataHandler::CITIES[DataHandler::MOSCOW_ID];
-
-        return $this->json(['name' => $cityName]);
-    }
-
-    /**
-     * @Route ("/cities", name="app_cities", methods={"GET"})
+     * @Route ("/cities", name="app_cities", methods={"GET"}, priority="1")
      * @return JsonResponse
      */
     public function cities(): JsonResponse
@@ -40,7 +27,7 @@ class SiteController extends AbstractController
     }
 
     /**
-     * @Route ("/select-city/{id}", name="app_select_city", methods={"GET"})
+     * @Route ("/select-city/{id}", name="app_select_city", methods={"GET"}, priority="1")
      * @param Request $request
      * @return RedirectResponse
      * @noinspection PhpUnused
@@ -54,7 +41,7 @@ class SiteController extends AbstractController
     }
 
     /**
-     * @Route ("/feedback", name="app_feedback", methods={"GET", "POST"})
+     * @Route ("/feedback", name="app_feedback", methods={"GET", "POST"}, priority="1")
      * @param Request $request
      * @return Response
      */

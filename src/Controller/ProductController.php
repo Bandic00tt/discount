@@ -1,6 +1,7 @@
 <?php
 namespace App\Controller;
 
+use App\Dto\Location;
 use App\Entity\Product;
 use App\Service\DiscountHelper;
 use App\Service\Shop\Five\DataHandler;
@@ -11,6 +12,7 @@ use Doctrine\ORM\Query\QueryException;
 use Exception;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -21,29 +23,46 @@ class ProductController extends AbstractController
 
     private EntityManagerInterface $em;
     private DiscountHelper $discountHelper;
-    private int $locationId;
+    private Location $location;
 
     public function __construct(EntityManagerInterface $em, DiscountHelper $discountHelper)
     {
         $this->em = $em;
         $this->discountHelper = $discountHelper;
-        $this->locationId = $this->getLocationId();
+        $this->location = $this->getLocation();
     }
 
     /**
-     * @Route ("/{page}", defaults={"page"=1}, requirements={"page"="\d+"}, name="app_index")
+     * @Route ("/", name="app_index")
+     * @return RedirectResponse
+     */
+    public function index(): RedirectResponse
+    {
+        return $this->redirectToRoute('app_list', [
+            'cityEn' => $this->location->cityNameEn
+        ]);
+    }
+
+    /**
+     * @Route (
+     *     "/{cityEn}/{page}",
+     *     defaults={"page"=1},
+     *     requirements={"cityEn"="\w+", "page"="\d+"},
+     *     name="app_list"
+     * )
      * @param Request $request
      * @return Response
      * @throws NonUniqueResultException
      * @throws QueryException
      * @throws NoResultException
      */
-    public function index(Request $request): Response
+    public function list(Request $request): Response
     {
+        $cityEn = $request->get('cityEn');
         $page = (int) $request->get('page', 1);
         $searchQuery = $request->get('q');
         // Пагинация
-        $totalProducts = $this->discountHelper->getTotalProducts($this->locationId, $searchQuery);
+        $totalProducts = $this->discountHelper->getTotalProducts($this->location->cityId, $searchQuery);
         $totalPages = ceil($totalProducts / DiscountHelper::MAX_RESULTS);
         $firstPage = 1;
         $lastPage = min($totalPages, self::PAGINATION_SIZE);
@@ -59,16 +78,18 @@ class ProductController extends AbstractController
         }
 
         // todo: переместить выборки в специальные классы
-        $products =  $this->discountHelper->getProducts($this->locationId, $page, $searchQuery);
-        $discountHistory = $this->discountHelper->getDiscountHistory($this->locationId, $products);
+        $products =  $this->discountHelper->getProducts($this->location->cityId, $page, $searchQuery);
+        $discountHistory = $this->discountHelper->getDiscountHistory($this->location->cityId, $products);
         $year = date('Y');
         $yearDates = $this->discountHelper->dateHelper->getYearDates($year);
         $discountDates = $this->discountHelper->getDiscountDates($year, $discountHistory);
         $discountYears = $this->discountHelper->getDiscountYears($discountHistory);
         $activeProductDiscounts = $this->discountHelper->getActiveProductDiscounts($products);
 
-        return $this->render('/product/index.html.twig', [
+        return $this->render('/product/list.html.twig', [
             'products' => $products,
+            'params' => ['cityEn' => $cityEn, 'page' => $page],
+            'location' => $this->location,
             'currentPage' => $page,
             'firstPage' => $firstPage,
             'lastPage' => $lastPage,
@@ -83,7 +104,7 @@ class ProductController extends AbstractController
 
     /**
      * todo: it seems too complex, needs refactoring
-     * @Route ("/product/{id}", name="app_product", methods={"GET"})
+     * @Route ("/{cityEn}/product/{id}", name="app_product", methods={"GET"})
      * @param Request $request
      * @return Response
      * @throws Exception
@@ -96,7 +117,7 @@ class ProductController extends AbstractController
             ->getRepository(Product::class)
             ->findOneBy(['product_id' => $productId]);
         $activeProductDiscounts = $this->discountHelper->getActiveProductDiscounts([$product]);
-        $discountHistory = $this->discountHelper->getDiscountHistory($this->locationId, [$product]);
+        $discountHistory = $this->discountHelper->getDiscountHistory($this->location->cityId, [$product]);
         $productDiscountYears = $this->discountHelper->getDiscountYears($discountHistory)[$productId] ?? [];
         $datesByYears = [];
         $productDiscountDatesByYears = [];
@@ -115,7 +136,7 @@ class ProductController extends AbstractController
     }
 
     /**
-     * @Route ("/time-limited-discount-data", name="app_time_limited_discount_data")
+     * @Route ("/time-limited-discount-data", name="app_time_limited_discount_data", priority="1")
      * @param Request $request
      * @return JsonResponse
      * @throws NonUniqueResultException
@@ -138,7 +159,7 @@ class ProductController extends AbstractController
     }
 
     /**
-     * @Route ("/discount-data-by-year", name="app_discount_data_by_year")
+     * @Route ("/discount-data-by-year", name="app_discount_data_by_year", priority="1")
      * @param Request $request
      * @return JsonResponse
      * @throws Exception
@@ -154,7 +175,7 @@ class ProductController extends AbstractController
             ->getRepository(Product::class)
             ->findOneBy(['product_id' => $productId]);
 
-        $discountHistory = $this->discountHelper->getDiscountHistory($this->locationId, [$product]);
+        $discountHistory = $this->discountHelper->getDiscountHistory($this->location->cityId, [$product]);
         $productDiscountDates = $this->discountHelper->getDiscountDates($year, $discountHistory)[$productId];
         $productDiscountYears = $this->discountHelper->getDiscountYears($discountHistory)[$productId];
 
@@ -172,7 +193,7 @@ class ProductController extends AbstractController
     /**
      *
      * todo: transfer query
-     * @Route ("/products", name="app_products")
+     * @Route ("/products", name="app_products", priority="1")
      * @param Request $request
      * @return Response
      */
@@ -198,10 +219,25 @@ class ProductController extends AbstractController
     }
 
     /**
-     * @return int
+     * @return Location
+     * @throws Exception
      */
-    private function getLocationId(): int
+    private function getLocation(): Location
     {
-        return (int) ($_COOKIE['discountLocationId'] ?? DataHandler::MOSCOW_ID);
+        $cities = require __DIR__ . '/../../cities.php';
+        $locationId = (int) ($_COOKIE['discountLocationId'] ?? DataHandler::MOSCOW_ID);
+
+        $cityItem = $cities[$locationId] ?? null;
+
+        if ($cityItem) {
+            $location = new Location();
+            $location->cityId = $locationId;
+            $location->cityNameRu = $cityItem['ru'];
+            $location->cityNameEn = $cityItem['en'];
+
+            return $location;
+        }
+
+        throw new Exception('City item not found');
     }
 }

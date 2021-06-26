@@ -32,12 +32,13 @@
                data-bs-toggle="modal"
                data-bs-target="#selectCityModal"
             >
-                <!-- Ajax loading -->
+                {{ location.cityNameRu }}
             </a>
         </div>
     </div>
     {% if products %}
         {% include '/product/partials/pagination.html.twig' with {
+            'params': params,
             'currentPage': currentPage,
             'firstPage': firstPage,
             'lastPage': lastPage,
@@ -76,8 +77,9 @@
                                 <div class="row">
                                     <div class="col">
                                         <small>
+{#                                            {% if 1 %}#}
                                             {% if productDiscountYears|length > 1 %}
-                                                <a href="{{ path('app_product', {'id': product.productId}) }}">{{ product.name }}</a>
+                                                <a href="{{ path('app_product', {'cityEn': params.cityEn, 'id': product.productId}) }}">{{ product.name }}</a>
                                             {% else %}
                                                 {{ product.name }}
                                             {% endif %}
@@ -104,6 +106,7 @@
         </div>
 
         {% include '/product/partials/pagination.html.twig' with {
+            'params': params,
             'currentPage': currentPage,
             'firstPage': firstPage,
             'lastPage': lastPage,

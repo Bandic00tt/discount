@@ -17,10 +17,7 @@ $(function(){
 
     const locationId = Cookies.get('discountLocationId');
     if (locationId === undefined) {
-        $.get('/city', setCityName, 'json');
         $.get('/cities', viewCities, 'json');
-    } else {
-        $.get('/city', {cityId: locationId}, setCityName, 'json');
     }
 
     $(document).on('click', '.select-city', function (e){

@@ -1,6 +1,5 @@
 <div class="products-pagination mt-3 mb-3">
     <div class="row">
-        {% set params = {'page': currentPage} %}
         {% if app.request.query.get('q') %}
             {% set params = params|merge({'q': app.request.query.get('q')}) %}
         {% endif %}
@@ -12,7 +11,7 @@
                         {# Ссылка на первую страницу, когда она нужна #}
                         {% if firstPage > 1 %}
                             {% set params = params|merge({'page': 1}) %}
-                            <a href="{{ path('app_index', params) }}" class="btn btn-success" title="На первую страницу">
+                            <a href="{{ path('app_list', params) }}" class="btn btn-success" title="На первую страницу">
                                 <i class="fa fa-fast-backward"></i>
                             </a>
                         {% endif %}
@@ -21,7 +20,7 @@
                         {# Ссылка на предыдущую страницу #}
                         {% if currentPage > 1 %}
                             {% set params = params|merge({'page': currentPage - 1}) %}
-                            <a href="{{ path('app_index', params) }}" class="btn btn-success" title="На предыдущую страницу">
+                            <a href="{{ path('app_list', params) }}" class="btn btn-success" title="На предыдущую страницу">
                                 <i class="fa fa-angle-double-left"></i>
                             </a>
                         {% endif %}
@@ -35,7 +34,7 @@
                     {% for page in firstPage..lastPage %}
                         {% set params = params|merge({'page': page}) %}
                         <li class="list-group-item {{ page == currentPage ? 'bg-primary' : '' }}">
-                            <a href="{{ path('app_index', params) }}"
+                            <a href="{{ path('app_list', params) }}"
                                class="product-page {{ page == currentPage ? 'active-page' : '' }}"
                             >
                                 {{ page }}
@@ -52,7 +51,7 @@
                         {# Ссылка на следующую страницу #}
                         {% if currentPage < totalPages %}
                             {% set params = params|merge({'page': currentPage + 1}) %}
-                            <a href="{{ path('app_index', params) }}" class="btn btn-success" title="На следующую страницу">
+                            <a href="{{ path('app_list', params) }}" class="btn btn-success" title="На следующую страницу">
                                 <i class="fa fa-angle-double-right"></i>
                             </a>
                         {% endif %}
@@ -61,7 +60,7 @@
                         {# Ссылка на последнюю страницу, когда она нужна #}
                         {% if lastPage < totalPages %}
                             {% set params = params|merge({'page': totalPages}) %}
-                            <a href="{{ path('app_index', params) }}" class="btn btn-success" title="На последнюю страницу">
+                            <a href="{{ path('app_list', params) }}" class="btn btn-success" title="На последнюю страницу">
                                 <i class="fa fa-fast-forward"></i>
                             </a>
                         {% endif %}
