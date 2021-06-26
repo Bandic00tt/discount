@@ -2,6 +2,7 @@
 namespace App\Command;
 
 use App\Service\Transliterate;
+use App\ValueObject\Cities;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -24,13 +25,7 @@ class TestCommand extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $cities = require __DIR__ .'/../../cities.php';
-        $filePath = __DIR__ .'/../../translit.txt';
 
-        foreach ($cities as $city) {
-            $tCity = strtolower(Transliterate::process($city)) . PHP_EOL;
-            file_put_contents($filePath, $tCity, FILE_APPEND);
-        }
 
         return 0;
     }

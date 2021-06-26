@@ -1,14 +1,8 @@
 $(function(){
-    function setCityName(data) {
-        if (data.hasOwnProperty('name')) {
-            $('.select-city').text(data.name);
-        }
-    }
-
     function viewCities(data) {
         if (data.hasOwnProperty('html')) {
             let modal = $('#selectCityModal');
-            modal.find('.modal-body').html(data.html);
+            modal.find('.cities-list-modal').html(data.html);
 
             const selectCityModal = new bootstrap.Modal(modal, {keyboard: false});
             selectCityModal.show();
@@ -23,6 +17,31 @@ $(function(){
     $(document).on('click', '.select-city', function (e){
         e.preventDefault();
         $.get('/cities', viewCities, 'json');
+        return false;
+    });
+
+    $(document).on('keyup', '#search-cities-input', function (e) {
+        e.preventDefault();
+        const query = $(this).val();
+        const form = $(this).closest('form');
+        const url = form.attr('action');
+
+        if (query.length > 1) {
+            $.get(url, {query: query}, (data) => {
+                if (data.hasOwnProperty('html')) {
+                    let modal = $('#selectCityModal');
+                    modal.find('.cities-list-modal').html(data.html);
+                }
+            }, 'json');
+        } else {
+            $.get(url, (data) => {
+                if (data.hasOwnProperty('html')) {
+                    let modal = $('#selectCityModal');
+                    modal.find('.cities-list-modal').html(data.html);
+                }
+            }, 'json');
+        }
+
         return false;
     });
 

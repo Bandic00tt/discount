@@ -5,6 +5,7 @@ use App\Dto\Location;
 use App\Entity\Product;
 use App\Service\DiscountHelper;
 use App\Service\Shop\Five\DataHandler;
+use App\ValueObject\Cities;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\NonUniqueResultException;
 use Doctrine\ORM\NoResultException;
@@ -224,7 +225,7 @@ class ProductController extends AbstractController
      */
     private function getLocation(): Location
     {
-        $cities = require __DIR__ . '/../../cities.php';
+        $cities = Cities::list();
         $locationId = (int) ($_COOKIE['discountLocationId'] ?? DataHandler::MOSCOW_ID);
 
         $cityItem = $cities[$locationId] ?? null;

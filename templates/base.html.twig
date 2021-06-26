@@ -57,14 +57,29 @@
         </main>
 
         <div class="modal fade" id="selectCityModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-            <div class="modal-dialog">
+            <div class="modal-dialog modal-lg">
                 <div class="modal-content">
                     <div class="modal-header">
                         <h5 class="modal-title" id="exampleModalLabel">Выберите город</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
-                        <!-- Ajax loading -->
+                        <div>
+                            <form action="{{ path("app_cities") }}">
+                                <div>
+                                    <label for="search-cities-input"></label>
+                                    <input type="text"
+                                           class="form-control"
+                                           id="search-cities-input"
+                                           name="search-cities-input"
+                                           placeholder="Введите город"
+                                    >
+                                </div>
+                            </form>
+                        </div>
+                        <div class="cities-list-modal mt-4">
+                            <!-- Ajax loading -->
+                        </div>
                     </div>
                 </div>
             </div>

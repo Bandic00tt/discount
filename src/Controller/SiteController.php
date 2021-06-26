@@ -4,6 +4,7 @@ namespace App\Controller;
 use App\Entity\Feedback;
 use App\Form\FeedbackType;
 use App\Service\Shop\Five\DataHandler;
+use App\ValueObject\Cities;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\RedirectResponse;
@@ -15,15 +16,38 @@ class SiteController extends AbstractController
 {
     /**
      * @Route ("/cities", name="app_cities", methods={"GET"}, priority="1")
+     * @param Request $request
      * @return JsonResponse
      */
-    public function cities(): JsonResponse
+    public function cities(Request $request): JsonResponse
     {
+        $query = $request->get('query');
         $html = $this->renderView('/site/cities.html.twig', [
-            'cities' => DataHandler::CITIES
+            'cities' => $this->getCities($query),
         ]);
 
         return $this->json(['html' => $html]);
+    }
+
+    /**
+     * @param string|null $query
+     * @return array
+     */
+    private function getCities(?string $query): array
+    {
+        $list = Cities::list();
+        if ($query) {
+            $res = [];
+            foreach ($list as $id => $cityItem) {
+                if (strpos(mb_strtolower($cityItem['ru'], 'utf-8'), $query) !== false) {
+                    $res[$id] = $cityItem;
+                }
+            }
+
+            return $res;
+        }
+
+        return $list;
     }
 
     /**
