@@ -1,6 +1,6 @@
 <div class="text-lg-end">
     <ul>
-        {% for y in productDiscountYears  %}
+        {% for y in discountYears  %}
             <li class="history-year text-center">
                 {% if y == year %}
                     <span class="fw-bold">{{ y }}</span>
@@ -41,7 +41,7 @@
                     <tr>
                         {% for date in yearDates %}
                             {% if date|date('N') == weekDay %}
-                                <td class="{{ date in productDiscountDates ? 'discount-cell bg-success' : 'empty-cell' }}"
+                                <td class="{{ date in discountDates ? 'discount-cell bg-success' : 'empty-cell' }}"
                                     title="{{ date|date('d.m.Y') }}"
                                     data-product_id="{{ product.productId }}"
                                     data-discount_date="{{ date|date('d.m.Y') }}"

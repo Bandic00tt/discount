@@ -8,6 +8,7 @@ use App\Repository\DiscountRepository;
 use App\Repository\ProductRepository;
 use App\Service\DateHelper;
 use App\Service\DataHandler;
+use App\Service\ProductItem;
 use App\Service\ProductList;
 use App\ValueObject\Cities;
 use Doctrine\ORM\EntityManagerInterface;
@@ -101,7 +102,7 @@ class ProductController extends AbstractController
     }
 
     /**
-     * todo: it seems too complex, needs refactoring
+     * todo: можно убрать product из параметров вьюхи, по контексту и так понятно
      * @Route ("/{cityEn}/product/{id}", name="app_product", methods={"GET"})
      * @param Request $request
      * @return Response
@@ -111,25 +112,23 @@ class ProductController extends AbstractController
     {
         $productId = $request->get('id');
 
+        /** @var Product $product */
         $product = $this->em
             ->getRepository(Product::class)
             ->findOneBy(['product_id' => $productId]);
-        $activeProductDiscounts = $this->discountRepository->findActiveProductDiscounts([$product]);
-        $discountHistory = $this->discountHistoryRepository->findAllByLocationIdAndProducts($this->location->cityId, [$product]);
-        $productDiscountYears = $this->dateHelper->getDiscountYears($discountHistory)[$productId] ?? [];
-        $datesByYears = [];
-        $productDiscountDatesByYears = [];
-        foreach ($productDiscountYears as $year) {
-            $productDiscountDatesByYears[$year] = $this->dateHelper->getDiscountDates($year, $discountHistory)[$productId];
-            $datesByYears[$year] = $this->dateHelper->getYearDates($year);
-        }
+
+        $discountHistory = $this->discountHistoryRepository
+            ->findAllByLocationIdAndProducts($this->location->cityId, [$product]);
+
+        $productItem = new ProductItem($this->dateHelper, $product, $discountHistory);
+        $productItemViewParams = $productItem->getProductItemViewParams($this->discountRepository);
 
         return $this->render('/product/product.html.twig', [
             'product' => $product,
-            'activeProductDiscounts' => $activeProductDiscounts,
-            'productDiscountYears' => $productDiscountYears,
-            'datesByYears' => $datesByYears,
-            'productDiscountDatesByYears' => $productDiscountDatesByYears,
+            'activeDiscounts' => $productItemViewParams->activeDiscounts,
+            'discountYears' => $productItemViewParams->discountYears,
+            'datesByYears' => $productItemViewParams->datesByYears,
+            'discountDatesByYears' => $productItemViewParams->discountDatesByYears,
         ]);
     }
 
@@ -144,7 +143,8 @@ class ProductController extends AbstractController
         $productId = $request->get('productId');
         $discountDate = $request->get('discountDate');
 
-        $discountHistory = $this->discountHistoryRepository->findByProductIdAndTimeLimit($productId, $discountDate);
+        $discountHistory = $this->discountHistoryRepository
+            ->findByLimit($this->location->cityId, $productId, $discountDate);
 
         $view = $this->renderView('/product/_partials/productCard.html.twig', [
             'priceDiscount' => $discountHistory->getPriceDiscount(),
@@ -168,12 +168,17 @@ class ProductController extends AbstractController
         $productId = $request->get('productId');
         $year = $request->get('year');
 
-        $yearDates = $this->dateHelper->getYearDates($year);
+        /** @var Product $product */
         $product = $this->em
             ->getRepository(Product::class)
             ->findOneBy(['product_id' => $productId]);
 
-        $discountHistory = $this->discountHistoryRepository->findAllByLocationIdAndProducts($this->location->cityId, [$product]);
+        $discountHistory = $this->discountHistoryRepository
+            ->findAllByLocationIdAndProducts($this->location->cityId, [$product]);
+
+        $productItem = new ProductItem($this->dateHelper, $product, $discountHistory);
+
+        $yearDates = $this->dateHelper->getYearDates($year);
         $productDiscountDates = $this->dateHelper->getDiscountDates($year, $discountHistory)[$productId];
         $productDiscountYears = $this->dateHelper->getDiscountYears($discountHistory)[$productId];
 
@@ -186,34 +191,6 @@ class ProductController extends AbstractController
         ]);
 
         return $this->json(['html' => $view]);
-    }
-
-    /**
-     *
-     * todo: transfer query
-     * @Route ("/products", name="app_products", priority="1")
-     * @param Request $request
-     * @return Response
-     */
-    public function products(Request $request): Response
-    {
-        $q = $request->get('q');
-
-        $query = $this->em
-            ->createQueryBuilder()
-            ->select('p')
-            ->from(Product::class, 'p');
-
-        if ($q) {
-            $query->where('p.name like :q')
-                ->setParameter('q', '%'. $q .'%');
-        }
-
-        $products = $query->getQuery()->getResult();
-
-        return $this->render('/product/products.html.twig', [
-            'products' => $products
-        ]);
     }
 
     /**

@@ -11,8 +11,8 @@
                         </div>
                         <div class="col">
                             <div class="product-item-wrapper">
-                                {% if product.productId in activeProductDiscounts|keys %}
-                                    {% set discount = activeProductDiscounts[product.productId] %}
+                                {% if product.productId in activeDiscounts|keys %}
+                                    {% set discount = activeDiscounts[product.productId] %}
                                     {% include '/product/_partials/productCard.html.twig' with {
                                         'priceDiscount': discount.priceDiscount,
                                         'priceNormal': discount.priceNormal,
@@ -38,14 +38,14 @@
                 </div>
             </div>
             <div class="col-lg-9">
-                {% for year in productDiscountYears %}
+                {% for year in discountYears %}
                     <div class="discount-history-wrapper">
                         {% include '/product/_partials/history.html.twig' with {
                             'year': year,
                             'yearDates': datesByYears[year],
                             'product': product,
-                            'productDiscountDates': productDiscountDatesByYears[year],
-                            'productDiscountYears': [year],
+                            'discountDates': discountDatesByYears[year],
+                            'discountYears': [year],
                         } %}
                     </div>
                 {% endfor %}

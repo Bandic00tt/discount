@@ -51,12 +51,13 @@ class DiscountHistoryRepository extends ServiceEntityRepository
     }
 
     /**
+     * @param int $locationId
      * @param int $productId
      * @param string $date
      * @return DiscountHistory
      * @throws NonUniqueResultException
      */
-    public function findByProductIdAndTimeLimit(int $productId, string $date): DiscountHistory
+    public function findByLimit(int $locationId, int $productId, string $date): DiscountHistory
     {
         $ts = strtotime($date);
 
@@ -64,8 +65,11 @@ class DiscountHistoryRepository extends ServiceEntityRepository
             ->createQueryBuilder()
             ->select(['dh'])
             ->from(DiscountHistory::class, 'dh')
-            ->where('dh.product_id = :productId and dh.date_begin <= :ts and dh.date_end >= :ts')
+            ->andWhere('dh.location_id = :locationId')
+            ->andWhere('dh.product_id = :productId')
+            ->andWhere('dh.date_begin <= :ts and dh.date_end >= :ts')
             ->setParameters([
+                'locationId' => $locationId,
                 'productId' => $productId,
                 'ts' => $ts
             ])
