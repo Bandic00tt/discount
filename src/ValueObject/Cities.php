@@ -1,11 +1,10 @@
 <?php
-
-
 namespace App\ValueObject;
-
 
 class Cities
 {
+    public const MOSCOW_ID = 8145;
+
     public static function list(): array
     {
         return [

@@ -77,6 +77,57 @@ class DiscountHistoryRepository extends ServiceEntityRepository
             ->getOneOrNullResult();
     }
 
+    /**
+     * @param int $locationId
+     * @param array $results
+     * @return int
+     */
+    public function updateByLocationId(int $locationId, array $results): int
+    {
+        $total = 0;
+        $existingDiscountIds = $this->getExistingDiscountIds($locationId);
+        foreach ($results as $result) {
+            $discountId = (int)$result['promo']['id'];
+            if (in_array($discountId, $existingDiscountIds, false)) {
+                continue;
+            }
+
+            $entity = new DiscountHistory();
+            $entity->setLocationId($locationId);
+            $entity->setProductId($result['plu']);
+            $entity->setDiscountId($discountId);
+            $entity->setDateBegin(strtotime($result['promo']['date_begin']));
+            $entity->setDateEnd(strtotime($result['promo']['date_end']));
+            $entity->setPriceDiscount($result['current_prices']['price_promo__min']);
+            $entity->setPriceNormal($result['current_prices']['price_reg__min']);
+            $entity->setSavedAt(time());
+
+            $this->em->persist($entity);
+            ++$total;
+        }
+
+        $this->em->flush();
+        $this->em->clear();
+
+        return $total;
+    }
+
+    /**
+     * @return int[]
+     */
+    public function getExistingDiscountIds(int $locationId): array
+    {
+        $res = $this->em->createQueryBuilder()
+            ->select(['dh.discount_id'])
+            ->from(DiscountHistory::class, 'dh')
+            ->andWhere('dh.location_id = :locationId')
+            ->setParameter('locationId', $locationId)
+            ->getQuery()
+            ->getResult();
+
+        return array_column($res, 'discount_id');
+    }
+
     // /**
     //  * @return DiscountHistory[] Returns an array of DiscountHistory objects
     //  */

@@ -4,6 +4,7 @@ namespace App\Repository;
 
 use App\Entity\City;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
@@ -14,9 +15,47 @@ use Doctrine\Persistence\ManagerRegistry;
  */
 class CityRepository extends ServiceEntityRepository
 {
-    public function __construct(ManagerRegistry $registry)
+    private EntityManagerInterface $em;
+
+    public function __construct(EntityManagerInterface $em, ManagerRegistry $registry)
     {
+        $this->em = $em;
         parent::__construct($registry, City::class);
+    }
+
+    public function clearByRegionId(int $regionId)
+    {
+        $this->em->createQueryBuilder()
+            ->delete(City::class, 'c')
+            ->where('c.region_id = :regionId')
+            ->setParameter('regionId', $regionId)
+            ->getQuery()
+            ->execute();
+    }
+
+    /**
+     * @param array $cities
+     * @return int
+     */
+    public function update(array $cities): int
+    {
+        $total = 0;
+        foreach ($cities as $city) {
+            $entity = new City();
+            $entity->setRegionId($city['region']);
+            $entity->setCityId($city['id']);
+            $entity->setName($city['name']);
+            $entity->setCreatedAt(time());
+            $entity->setUpdatedAt(time());
+
+            $this->em->persist($entity);
+            ++$total;
+        }
+
+        $this->em->flush();
+        $this->em->clear();
+
+        return $total;
     }
 
     // /**

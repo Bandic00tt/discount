@@ -81,6 +81,96 @@ class ProductRepository extends ServiceEntityRepository
         return $query->getQuery()->getSingleScalarResult();
     }
 
+    /**
+     * @param int $locationId
+     * @param array $results
+     * @return int
+     */
+    public function updateByLocationId(int $locationId, array $results): int
+    {
+        $total = 0;
+        $existingProductIds = $this->getExistingProductIds($locationId);
+        $existingProductIdsForUpdate = [];
+        foreach ($results as $result) {
+            $productId = (int)$result['plu'];
+            if (in_array($productId, $existingProductIds, false)) {
+                $existingProductIdsForUpdate[] = $productId;
+                continue;
+            }
+
+            $entity = new Product();
+            $entity->setLocationId($locationId);
+            $entity->setProductId($productId);
+            $entity->setName($result['name']);
+            $entity->setImgLink($result['img_link']);
+            $entity->setIsImgLocal(0);
+            $entity->setCreatedAt(time());
+            $entity->setUpdatedAt(time());
+
+            $this->em->persist($entity);
+            ++$total;
+        }
+
+        $this->em->flush();
+        $this->em->clear();
+
+        $this->updateTimestampForExistingProducts($existingProductIdsForUpdate);
+
+        return $total;
+    }
+
+    /**
+     * Обновляем таймстамп у ранее сохраненных продуктов, для которых пришли новые данные по скидкам
+     * @param array $productIds
+     * @return void
+     */
+    private function updateTimestampForExistingProducts(array $productIds): void
+    {
+        $this->em
+            ->createQueryBuilder()
+            ->update(Product::class, 'p')
+            ->set('p.updated_at', time())
+            ->andWhere('p.product_id in (:productIds)')
+            ->setParameter('productIds', $productIds)
+            ->getQuery()
+            ->execute();
+    }
+
+    /**
+     * @return int[]
+     */
+    private function getExistingProductIds(int $locationId): array
+    {
+        $res = $this->em->createQueryBuilder()
+            ->select(['p.product_id'])
+            ->from(Product::class, 'p')
+            ->andWhere('p.location_id = :locationId')
+            ->setParameter('locationId', $locationId)
+            ->getQuery()
+            ->getResult();
+
+        return array_column($res, 'product_id');
+    }
+
+    /**
+     * @param int $categoryId
+     * @param array $results
+     * @return int
+     */
+    public function getNumberOfCategorizedProducts(int $categoryId, array $results): int
+    {
+        $productIds = array_column($results, 'plu');
+
+        return $this->em
+            ->createQueryBuilder()
+            ->update(Product::class, 'p')
+            ->set('p.category_id', $categoryId)
+            ->andWhere('p.product_id in (:productIds)')
+            ->setParameters(['productIds' => $productIds])
+            ->getQuery()
+            ->execute();
+    }
+
     // /**
     //  * @return Product[] Returns an array of Product objects
     //  */

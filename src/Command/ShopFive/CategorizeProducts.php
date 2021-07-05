@@ -1,11 +1,14 @@
-<?php
+<?php /** @noinspection DuplicatedCode */
+
 namespace App\Command\ShopFive;
 
 use App\Entity\Category;
 use App\Http\ApiClient;
-use App\Service\DataHandler;
+use App\Repository\ProductRepository;
+use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\EntityNotFoundException;
 use Doctrine\ORM\NonUniqueResultException;
+use GuzzleHttp\Exception\GuzzleException;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -15,13 +18,19 @@ class CategorizeProducts extends Command
     protected static $defaultName = 'shop:five:categorize:products';
 
     private ApiClient $apiClient;
-    private DataHandler $dataHandler;
+    private EntityManagerInterface $em;
+    private ProductRepository $productRepository;
 
-    public function __construct(ApiClient $apiClient, DataHandler $dataHandler)
+    public function __construct(
+        ApiClient $apiClient,
+        EntityManagerInterface $em,
+        ProductRepository $productRepository,
+    )
     {
         parent::__construct();
         $this->apiClient = $apiClient;
-        $this->dataHandler = $dataHandler;
+        $this->em = $em;
+        $this->productRepository = $productRepository;
     }
 
     protected function configure()
@@ -30,6 +39,11 @@ class CategorizeProducts extends Command
             ->addArgument('categoryId');
     }
 
+    /**
+     * @throws NonUniqueResultException
+     * @throws GuzzleException
+     * @throws EntityNotFoundException
+     */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $locationId = $input->getArgument('locationId');
@@ -44,7 +58,6 @@ class CategorizeProducts extends Command
 
             if (empty($data['results'])) {
                 echo "Parsing finished\n";
-                --$page;
                 break;
             }
 
@@ -58,7 +71,7 @@ class CategorizeProducts extends Command
             sleep(2);
         }
 
-        $total = $this->dataHandler->getNumberOfCategorizedProducts($category->getCategoryId(), $results);
+        $total = $this->productRepository->getNumberOfCategorizedProducts($category->getCategoryId(), $results);
 
         echo sprintf("%d products have been successfully categorized", $total);
 
@@ -73,7 +86,7 @@ class CategorizeProducts extends Command
      */
     private function getCategory(?int $categoryId): Category
     {
-        $query = $this->dataHandler->em
+        $query = $this->em
             ->createQueryBuilder()
             ->select('c')
             ->from(Category::class, 'c')
@@ -92,8 +105,8 @@ class CategorizeProducts extends Command
 
         if ($category) {
             $category->setUpdatedAt(time());
-            $this->dataHandler->em->flush();
-            $this->dataHandler->em->clear();
+            $this->em->flush();
+            $this->em->clear();
 
             return $category;
         }

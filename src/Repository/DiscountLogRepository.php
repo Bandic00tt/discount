@@ -4,6 +4,7 @@ namespace App\Repository;
 
 use App\Entity\DiscountLog;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
@@ -14,9 +15,29 @@ use Doctrine\Persistence\ManagerRegistry;
  */
 class DiscountLogRepository extends ServiceEntityRepository
 {
-    public function __construct(ManagerRegistry $registry)
+    private EntityManagerInterface $em;
+
+    public function __construct(EntityManagerInterface $em, ManagerRegistry $registry)
     {
+        $this->em = $em;
         parent::__construct($registry, DiscountLog::class);
+    }
+
+    /**
+     * @param int $locationId
+     * @param array $results
+     */
+    public function logByLocationId(int $locationId, array $results)
+    {
+        $entity = new DiscountLog();
+        $entity->setLocationId($locationId);
+        $entity->setData($results);
+        $entity->setSize(count($results));
+        $entity->setSavedAt(time());
+
+        $this->em->persist($entity);
+        $this->em->flush();
+        $this->em->clear();
     }
 
     // /**

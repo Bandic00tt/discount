@@ -2,7 +2,8 @@
 namespace App\Command\ShopFive;
 
 use App\Http\ApiClient;
-use App\Service\DataHandler;
+use App\Repository\CityRepository;
+use GuzzleHttp\Exception\GuzzleException;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -13,13 +14,13 @@ class UpdateRegionCities extends Command
     protected static $defaultName = 'shop:five:update:region:cities';
 
     private ApiClient $apiClient;
-    private DataHandler $dataHandler;
+    private CityRepository $cityRepository;
 
-    public function __construct(ApiClient $apiClient, DataHandler $dataHandler)
+    public function __construct(ApiClient $apiClient, CityRepository $cityRepository)
     {
         parent::__construct();
         $this->apiClient = $apiClient;
-        $this->dataHandler = $dataHandler;
+        $this->cityRepository = $cityRepository;
     }
 
     protected function configure()
@@ -27,12 +28,15 @@ class UpdateRegionCities extends Command
         $this->addArgument('regionId', InputArgument::REQUIRED);
     }
 
+    /**
+     * @throws GuzzleException
+     */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $regionId = $input->getArgument('regionId');
         $data = json_decode($this->apiClient->getRegionCities($regionId), true);
-        $this->dataHandler->clearRegionCities($regionId);
-        $result = $this->dataHandler->updateRegionCities($data['items']);
+        $this->cityRepository->clearByRegionId($regionId);
+        $result = $this->cityRepository->update($data['items']);
 
         echo "Got $result region cities\n";
 

@@ -4,6 +4,7 @@ namespace App\Repository;
 
 use App\Entity\Region;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
@@ -14,9 +15,43 @@ use Doctrine\Persistence\ManagerRegistry;
  */
 class RegionRepository extends ServiceEntityRepository
 {
-    public function __construct(ManagerRegistry $registry)
+    private EntityManagerInterface $em;
+
+    public function __construct(EntityManagerInterface $em, ManagerRegistry $registry)
     {
+        $this->em = $em;
         parent::__construct($registry, Region::class);
+    }
+
+    public function clear()
+    {
+        $this->em->createQueryBuilder()
+            ->delete(Region::class, 'r')
+            ->getQuery()
+            ->execute();
+    }
+
+    /**
+     * @param array $regions
+     * @return int
+     */
+    public function update(array $regions): int
+    {
+        $total = 0;
+        foreach ($regions as $region) {
+            $entity = new Region();
+            $entity->setRegionId($region['id']);
+            $entity->setName($region['name']);
+            $entity->setSavedAt(time());
+
+            $this->em->persist($entity);
+            ++$total;
+        }
+
+        $this->em->flush();
+        $this->em->clear();
+
+        return $total;
     }
 
     // /**

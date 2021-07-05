@@ -41,6 +41,50 @@ class DiscountRepository extends ServiceEntityRepository
             ->getResult();
     }
 
+    /**
+     * @param int $locationId
+     * @param array $results
+     * @return int
+     */
+    public function updateByLocationId(int $locationId, array $results): int
+    {
+        $total = 0;
+        foreach ($results as $result) {
+            $entity = new Discount();
+            $entity->setLocationId($locationId);
+            $entity->setProductId($result['plu']);
+            $entity->setDiscountId($result['promo']['id']);
+            $entity->setName($result['name']);
+            $entity->setImgLink($result['img_link']);
+            $entity->setDateBegin(strtotime($result['promo']['date_begin']));
+            $entity->setDateEnd(strtotime($result['promo']['date_end']));
+            $entity->setPriceDiscount($result['current_prices']['price_promo__min']);
+            $entity->setPriceNormal($result['current_prices']['price_reg__min']);
+            $entity->setSavedAt(time());
+
+            $this->em->persist($entity);
+            ++$total;
+        }
+
+        $this->em->flush();
+        $this->em->clear();
+
+        return $total;
+    }
+
+    /**
+     * Очищаем данные по скидкам для перезаписи, обновления данных
+     */
+    public function clearByLocationId(int $locationId)
+    {
+        $this->em->createQueryBuilder()
+            ->delete(Discount::class, 'd')
+            ->andWhere('d.location_id = :locationId')
+            ->setParameter('locationId', $locationId)
+            ->getQuery()
+            ->execute();
+    }
+
     // /**
     //  * @return Discount[] Returns an array of Discount objects
     //  */

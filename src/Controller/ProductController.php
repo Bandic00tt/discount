@@ -5,7 +5,6 @@ use App\Dto\Location;
 use App\Repository\DiscountHistoryRepository;
 use App\Repository\DiscountRepository;
 use App\Repository\ProductRepository;
-use App\Service\DataHandler;
 use App\Service\ProductItem;
 use App\Service\ProductList;
 use App\ValueObject\Cities;
@@ -170,7 +169,7 @@ class ProductController extends AbstractController
     private function getLocation(): Location
     {
         $cities = Cities::list();
-        $locationId = (int) ($_COOKIE['discountLocationId'] ?? DataHandler::MOSCOW_ID);
+        $locationId = (int) ($_COOKIE['discountLocationId'] ?? Cities::MOSCOW_ID);
 
         $cityItem = $cities[$locationId] ?? null;
 

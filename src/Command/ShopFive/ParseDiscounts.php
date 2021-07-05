@@ -3,27 +3,46 @@ namespace App\Command\ShopFive;
 
 use App\Entity\City;
 use App\Http\ApiClient;
+use App\Repository\DiscountHistoryRepository;
+use App\Repository\DiscountLogRepository;
+use App\Repository\DiscountRepository;
+use App\Repository\ProductRepository;
 use App\ValueObject\Cities;
+use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\EntityNotFoundException;
 use Doctrine\ORM\NonUniqueResultException;
 use GuzzleHttp\Exception\GuzzleException;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use App\Service\DataHandler;
 
 class ParseDiscounts extends Command
 {
     protected static $defaultName = 'shop:five:parse:discounts';
 
     private ApiClient $apiClient;
-    private DataHandler $dataHandler;
+    private EntityManagerInterface $em;
+    private DiscountLogRepository $discountLogRepository;
+    private DiscountRepository $discountRepository;
+    private DiscountHistoryRepository $discountHistoryRepository;
+    private ProductRepository $productRepository;
 
-    public function __construct(ApiClient $apiClient, DataHandler $dataHandler)
+    public function __construct(
+        ApiClient $apiClient,
+        EntityManagerInterface $em,
+        DiscountLogRepository $discountLogRepository,
+        DiscountRepository $discountRepository,
+        DiscountHistoryRepository $discountHistoryRepository,
+        ProductRepository $productRepository,
+    )
     {
-        parent::__construct();
         $this->apiClient = $apiClient;
-        $this->dataHandler = $dataHandler;
+        $this->em = $em;
+        $this->discountLogRepository = $discountLogRepository;
+        $this->discountRepository = $discountRepository;
+        $this->discountHistoryRepository = $discountHistoryRepository;
+        $this->productRepository = $productRepository;
+        parent::__construct();
     }
 
     protected function configure()
@@ -32,7 +51,6 @@ class ParseDiscounts extends Command
     }
 
     /**
-     * todo
      * @param InputInterface $input
      * @param OutputInterface $output
      * @return int
@@ -48,7 +66,7 @@ class ParseDiscounts extends Command
 
         $cityId = $location->getCityId();
         // Очищаем старые неактуальные данные
-        $this->dataHandler->clearDiscounts($cityId);
+        $this->discountRepository->clearByLocationId($cityId);
 
         $results = [];
         $page = 1;
@@ -72,15 +90,15 @@ class ParseDiscounts extends Command
         }
 
         // Логируем данные на случай если что-то пойдет не так
-        $this->dataHandler->logDiscounts($cityId, $results);
+        $this->discountLogRepository->logByLocationId($cityId, $results);
         // Сохраняем свежие данные по скидкам
-        $totalSaved = $this->dataHandler->updateDiscounts($cityId, $results);
+        $totalSaved = $this->discountRepository->updateByLocationId($cityId, $results);
         echo "Saved $totalSaved records from $page pages \n";
         // Сохраняем товары для каталога (справочника)
-        $totalNew = $this->dataHandler->updateProducts($cityId, $results);
+        $totalNew = $this->productRepository->updateByLocationId($cityId, $results);
         echo "Saved $totalNew new products \n";
         // Обновляем историю скидок
-        $totalHistory = $this->dataHandler->updateHistory($cityId, $results);
+        $totalHistory = $this->discountHistoryRepository->updateByLocationId($cityId, $results);
         echo "Saved $totalHistory history rows \n";
 
         return 0;
@@ -90,11 +108,10 @@ class ParseDiscounts extends Command
      * @param int|null $locationId
      * @return City
      * @throws EntityNotFoundException
-     * @throws NonUniqueResultException
      */
     public function getLocation(?int $locationId): City
     {
-        $query = $this->dataHandler->em
+        $query = $this->em
             ->createQueryBuilder()
             ->select('c')
             ->from(City::class, 'c');
@@ -114,8 +131,8 @@ class ParseDiscounts extends Command
 
         if ($location) {
             $location->setUpdatedAt(time());
-            $this->dataHandler->em->flush();
-            $this->dataHandler->em->clear();
+            $this->em->flush();
+            $this->em->clear();
 
             return $location;
         }

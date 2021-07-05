@@ -4,6 +4,7 @@ namespace App\Command\ShopFive;
 use App\Entity\Category;
 use App\Http\ApiClient;
 use Doctrine\ORM\EntityManagerInterface;
+use GuzzleHttp\Exception\GuzzleException;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -26,6 +27,9 @@ class UpdateChildCategories extends Command
         $this->addArgument('parentCategoryId');
     }
 
+    /**
+     * @throws GuzzleException
+     */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $parentCategoryId = $input->getArgument('parentCategoryId');

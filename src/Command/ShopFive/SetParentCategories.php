@@ -1,9 +1,9 @@
-<?php /** @noinspection PhpUnused */
+<?php
 
 namespace App\Command\ShopFive;
 
 use App\Entity\Category;
-use App\Service\DataHandler;
+use App\Repository\CategoryRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -12,19 +12,23 @@ use Symfony\Component\Console\Output\OutputInterface;
 class SetParentCategories extends Command
 {
     protected static $defaultName = 'shop:five:set:parent:categories';
-    private EntityManagerInterface $em;
-    private DataHandler $dataHandler;
 
-    public function __construct(EntityManagerInterface $em, DataHandler $dataHandler)
+    private EntityManagerInterface $em;
+    private CategoryRepository $categoryRepository;
+
+    public function __construct(
+        EntityManagerInterface $em,
+        CategoryRepository $categoryRepository,
+    )
     {
         parent::__construct();
         $this->em = $em;
-        $this->dataHandler = $dataHandler;
+        $this->categoryRepository = $categoryRepository;
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $this->dataHandler->clearParentCategories();
+        $this->categoryRepository->clearParentCategories();
         $parentCategories = require __DIR__ . '/../../../../parent_categories.php';
 
         foreach ($parentCategories as $id => $name) {
