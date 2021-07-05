@@ -1,8 +1,8 @@
 <?php
-namespace App\Command\Shop\Five;
+namespace App\Command\ShopFive;
 
-use App\Service\Shop\Five\DataHandler;
-use App\Service\YandexDisk;
+use App\Service\DataHandler;
+use App\Http\YandexDisk;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -10,7 +10,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 /**
  * todo: improve
  * Class GetUploadedDiscounts
- * @package App\Command\Shop\Five
+ * @package App\Command\ShopFive\Five
  */
 class GetUploadedDiscounts extends Command
 {

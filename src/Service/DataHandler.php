@@ -1,6 +1,6 @@
 <?php /** @noinspection DuplicatedCode */
 
-namespace App\Service\Shop\Five;
+namespace App\Service;
 
 use App\Entity\Category;
 use App\Entity\City;

@@ -1,8 +1,8 @@
 <?php
-namespace App\Command\Shop\Five;
+namespace App\Command\ShopFive;
 
 use App\Entity\City;
-use App\Service\Shop\Five\ApiClient;
+use App\Http\ApiClient;
 use App\ValueObject\Cities;
 use Doctrine\ORM\EntityNotFoundException;
 use Doctrine\ORM\NonUniqueResultException;
@@ -10,7 +10,7 @@ use GuzzleHttp\Exception\GuzzleException;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use App\Service\Shop\Five\DataHandler;
+use App\Service\DataHandler;
 
 class ParseDiscounts extends Command
 {

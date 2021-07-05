@@ -4,7 +4,8 @@ namespace App\Controller;
 use App\Dto\Location;
 use App\Entity\Product;
 use App\Service\DiscountHelper;
-use App\Service\Shop\Five\DataHandler;
+use App\Service\DataHandler;
+use App\Service\ProductList;
 use App\ValueObject\Cities;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\NonUniqueResultException;
@@ -20,12 +21,13 @@ use Symfony\Component\Routing\Annotation\Route;
 
 class ProductController extends AbstractController
 {
-    private const PAGINATION_SIZE = 20;
-
     private EntityManagerInterface $em;
     private DiscountHelper $discountHelper;
     private Location $location;
 
+    /**
+     * @throws Exception
+     */
     public function __construct(EntityManagerInterface $em, DiscountHelper $discountHelper)
     {
         $this->em = $em;
@@ -54,52 +56,36 @@ class ProductController extends AbstractController
      * @param Request $request
      * @return Response
      * @throws NonUniqueResultException
-     * @throws QueryException
      * @throws NoResultException
+     * @throws Exception
      */
     public function list(Request $request): Response
     {
         $cityEn = $request->get('cityEn');
         $page = (int) $request->get('page', 1);
         $searchQuery = $request->get('q');
-        // Пагинация
-        $totalProducts = $this->discountHelper->getTotalProducts($this->location->cityId, $searchQuery);
-        $totalPages = ceil($totalProducts / DiscountHelper::MAX_RESULTS);
-        $firstPage = 1;
-        $lastPage = min($totalPages, self::PAGINATION_SIZE);
 
-        if ($totalPages > $lastPage && $page > self::PAGINATION_SIZE / 2) {
-            if (($page + self::PAGINATION_SIZE / 2) < $totalPages) {
-                $lastPage = $page + self::PAGINATION_SIZE / 2;
-            } else {
-                $lastPage = $totalPages;
-            }
-
-            $firstPage = $lastPage - self::PAGINATION_SIZE;
-        }
-
-        // todo: переместить выборки в специальные классы
         $products =  $this->discountHelper->getProducts($this->location->cityId, $page, $searchQuery);
         $discountHistory = $this->discountHelper->getDiscountHistory($this->location->cityId, $products);
-        $year = date('Y');
-        $yearDates = $this->discountHelper->dateHelper->getYearDates($year);
-        $discountDates = $this->discountHelper->getDiscountDates($year, $discountHistory);
-        $discountYears = $this->discountHelper->getDiscountYears($discountHistory);
-        $activeProductDiscounts = $this->discountHelper->getActiveProductDiscounts($products);
+        $totalProducts = $this->discountHelper->getTotalProducts($this->location->cityId, $searchQuery);
+
+        $productList = new ProductList($this->discountHelper, $products, $discountHistory);
+        $productListViewParams = $productList->getProductListViewParams();
+        $productPaginationViewParams = $productList->getProductPaginationViewParams($page, $totalProducts);
 
         return $this->render('/product/list.html.twig', [
             'products' => $products,
             'params' => ['cityEn' => $cityEn, 'page' => $page],
             'location' => $this->location,
+            'year' => $productListViewParams->year,
+            'yearDates' => $productListViewParams->yearDates,
+            'discountDates' => $productListViewParams->discountDates,
+            'discountYears' => $productListViewParams->discountYears,
+            'activeProductDiscounts' => $productListViewParams->activeProductDiscounts,
             'currentPage' => $page,
-            'firstPage' => $firstPage,
-            'lastPage' => $lastPage,
-            'totalPages' => $totalPages,
-            'year' => $year,
-            'yearDates' => $yearDates,
-            'discountDates' => $discountDates,
-            'discountYears' => $discountYears,
-            'activeProductDiscounts' => $activeProductDiscounts,
+            'firstPage' => $productPaginationViewParams->firstPage,
+            'lastPage' => $productPaginationViewParams->lastPage,
+            'totalPages' => $productPaginationViewParams->totalPages,
         ]);
     }
 

@@ -1,9 +1,9 @@
 <?php
-namespace App\Command\Shop\Five;
+namespace App\Command\ShopFive;
 
 use App\Entity\Category;
-use App\Service\Shop\Five\ApiClient;
-use App\Service\Shop\Five\DataHandler;
+use App\Http\ApiClient;
+use App\Service\DataHandler;
 use Doctrine\ORM\EntityNotFoundException;
 use Doctrine\ORM\NonUniqueResultException;
 use Symfony\Component\Console\Command\Command;

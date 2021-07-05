@@ -1,5 +1,5 @@
 <?php
-namespace App\Service;
+namespace App\Http;
 
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;

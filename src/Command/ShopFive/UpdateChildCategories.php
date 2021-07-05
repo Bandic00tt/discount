@@ -1,8 +1,8 @@
 <?php
-namespace App\Command\Shop\Five;
+namespace App\Command\ShopFive;
 
 use App\Entity\Category;
-use App\Service\Shop\Five\ApiClient;
+use App\Http\ApiClient;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;

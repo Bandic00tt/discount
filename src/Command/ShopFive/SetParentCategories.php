@@ -1,9 +1,9 @@
 <?php /** @noinspection PhpUnused */
 
-namespace App\Command\Shop\Five;
+namespace App\Command\ShopFive;
 
 use App\Entity\Category;
-use App\Service\Shop\Five\DataHandler;
+use App\Service\DataHandler;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -25,7 +25,7 @@ class SetParentCategories extends Command
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $this->dataHandler->clearParentCategories();
-        $parentCategories = require __DIR__ .'/../../../../parent_categories.php';
+        $parentCategories = require __DIR__ . '/../../../../parent_categories.php';
 
         foreach ($parentCategories as $id => $name) {
             $category = new Category();

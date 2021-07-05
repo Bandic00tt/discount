@@ -1,8 +1,8 @@
 <?php
-namespace App\Command\Shop\Five;
+namespace App\Command\ShopFive;
 
-use App\Service\Shop\Five\ApiClient;
-use App\Service\Shop\Five\DataHandler;
+use App\Http\ApiClient;
+use App\Service\DataHandler;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;

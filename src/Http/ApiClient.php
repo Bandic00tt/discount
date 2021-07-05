@@ -1,5 +1,5 @@
 <?php
-namespace App\Service\Shop\Five;
+namespace App\Http;
 
 use Exception;
 use GuzzleHttp\Client;
