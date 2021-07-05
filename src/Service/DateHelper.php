@@ -1,6 +1,7 @@
 <?php
 namespace App\Service;
 
+use App\Entity\DiscountHistory;
 use DateInterval;
 use DatePeriod;
 use DateTime;
@@ -8,6 +9,67 @@ use Exception;
 
 class DateHelper
 {
+    /**
+     * @param DiscountHistory[] $history
+     * @return array
+     */
+    public function getDiscountYears(array $history): array
+    {
+        $result = [];
+        foreach ($history as $item) {
+            $yearBegin = date('Y', $item->getDateBegin());
+            $yearEnd = date('Y', $item->getDateEnd());
+
+            $result[$item->getProductId()][] = $yearBegin;
+            $result[$item->getProductId()][] = $yearEnd;
+        }
+
+        // Проходимся еще раз по годам со скидками, убираем дубликаты и сортируем
+        foreach ($result as $productId => $years) {
+            $years = array_unique($years);
+            sort($years);
+            $result[$productId] = $years;
+        }
+
+        return $result;
+    }
+
+    /**
+     * @param string $year
+     * @param DiscountHistory[] $history
+     * @return array
+     * @throws Exception
+     */
+    public function getDiscountDates(string $year, array $history): array
+    {
+        $result = [];
+        foreach ($history as $item) {
+            $result[$item->getProductId()][] = $this->getDatesFromRange(
+                new DateTime(date('Y-m-d', $item->getDateBegin())),
+                new DateTime(date('Y-m-d', $item->getDateEnd()))
+            );
+        }
+
+        foreach ($result as $productId => $dateRanges) {
+            $productDates = [];
+            foreach ($dateRanges as $dateRange) {
+                foreach ($dateRange as $date) {
+                    $cond = date('Y', strtotime($date)) === $year
+                        || date('Y', strtotime($date)) === (string)((int) $year - 1)
+                        || date('Y', strtotime($date)) === (string)((int) $year + 1);
+
+                    if ($cond) {
+                        $productDates[] = $date;
+                    }
+                }
+            }
+
+            $result[$productId] = $productDates;
+        }
+
+        return $result;
+    }
+
     /**
      * @param int $year
      * @return array

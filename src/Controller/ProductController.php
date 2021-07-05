@@ -3,14 +3,16 @@ namespace App\Controller;
 
 use App\Dto\Location;
 use App\Entity\Product;
-use App\Service\DiscountHelper;
+use App\Repository\DiscountHistoryRepository;
+use App\Repository\DiscountRepository;
+use App\Repository\ProductRepository;
+use App\Service\DateHelper;
 use App\Service\DataHandler;
 use App\Service\ProductList;
 use App\ValueObject\Cities;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\NonUniqueResultException;
 use Doctrine\ORM\NoResultException;
-use Doctrine\ORM\Query\QueryException;
 use Exception;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -21,17 +23,18 @@ use Symfony\Component\Routing\Annotation\Route;
 
 class ProductController extends AbstractController
 {
-    private EntityManagerInterface $em;
-    private DiscountHelper $discountHelper;
-    private Location $location;
-
     /**
      * @throws Exception
      */
-    public function __construct(EntityManagerInterface $em, DiscountHelper $discountHelper)
+    public function __construct(
+        private EntityManagerInterface $em,
+        private DateHelper $dateHelper,
+        private Location $location,
+        private ProductRepository $productRepository,
+        private DiscountHistoryRepository $discountHistoryRepository,
+        private DiscountRepository $discountRepository
+    )
     {
-        $this->em = $em;
-        $this->discountHelper = $discountHelper;
         $this->location = $this->getLocation();
     }
 
@@ -65,12 +68,20 @@ class ProductController extends AbstractController
         $page = (int) $request->get('page', 1);
         $searchQuery = $request->get('q');
 
-        $products =  $this->discountHelper->getProducts($this->location->cityId, $page, $searchQuery);
-        $discountHistory = $this->discountHelper->getDiscountHistory($this->location->cityId, $products);
-        $totalProducts = $this->discountHelper->getTotalProducts($this->location->cityId, $searchQuery);
+        // Список товаров для вывода на одной странице
+        $products = $this->productRepository
+            ->findListByParams($this->location->cityId, $page, $searchQuery);
+        // История скидок по списку товаров
+        $discountHistory = $this->discountHistoryRepository
+            ->findAllByLocationIdAndProducts($this->location->cityId, $products);
+        // Всего товаров
+        $totalProducts = $this->productRepository
+            ->findTotalByLocationIdAndSearchQuery($this->location->cityId, $searchQuery);
 
-        $productList = new ProductList($this->discountHelper, $products, $discountHistory);
-        $productListViewParams = $productList->getProductListViewParams();
+        $productList = new ProductList($this->dateHelper, $products, $discountHistory);
+        // Параметры списка товаров
+        $productListViewParams = $productList->getProductListViewParams($this->discountRepository);
+        // Параметры пагинации
         $productPaginationViewParams = $productList->getProductPaginationViewParams($page, $totalProducts);
 
         return $this->render('/product/list.html.twig', [
@@ -103,14 +114,14 @@ class ProductController extends AbstractController
         $product = $this->em
             ->getRepository(Product::class)
             ->findOneBy(['product_id' => $productId]);
-        $activeProductDiscounts = $this->discountHelper->getActiveProductDiscounts([$product]);
-        $discountHistory = $this->discountHelper->getDiscountHistory($this->location->cityId, [$product]);
-        $productDiscountYears = $this->discountHelper->getDiscountYears($discountHistory)[$productId] ?? [];
+        $activeProductDiscounts = $this->discountRepository->findActiveProductDiscounts([$product]);
+        $discountHistory = $this->discountHistoryRepository->findAllByLocationIdAndProducts($this->location->cityId, [$product]);
+        $productDiscountYears = $this->dateHelper->getDiscountYears($discountHistory)[$productId] ?? [];
         $datesByYears = [];
         $productDiscountDatesByYears = [];
         foreach ($productDiscountYears as $year) {
-            $productDiscountDatesByYears[$year] = $this->discountHelper->getDiscountDates($year, $discountHistory)[$productId];
-            $datesByYears[$year] = $this->discountHelper->dateHelper->getYearDates($year);
+            $productDiscountDatesByYears[$year] = $this->dateHelper->getDiscountDates($year, $discountHistory)[$productId];
+            $datesByYears[$year] = $this->dateHelper->getYearDates($year);
         }
 
         return $this->render('/product/product.html.twig', [
@@ -133,7 +144,7 @@ class ProductController extends AbstractController
         $productId = $request->get('productId');
         $discountDate = $request->get('discountDate');
 
-        $discountHistory = $this->discountHelper->getTimeLimitedDiscountData($productId, $discountDate);
+        $discountHistory = $this->discountHistoryRepository->findByProductIdAndTimeLimit($productId, $discountDate);
 
         $view = $this->renderView('/product/_partials/productCard.html.twig', [
             'priceDiscount' => $discountHistory->getPriceDiscount(),
@@ -157,14 +168,14 @@ class ProductController extends AbstractController
         $productId = $request->get('productId');
         $year = $request->get('year');
 
-        $yearDates = $this->discountHelper->dateHelper->getYearDates($year);
+        $yearDates = $this->dateHelper->getYearDates($year);
         $product = $this->em
             ->getRepository(Product::class)
             ->findOneBy(['product_id' => $productId]);
 
-        $discountHistory = $this->discountHelper->getDiscountHistory($this->location->cityId, [$product]);
-        $productDiscountDates = $this->discountHelper->getDiscountDates($year, $discountHistory)[$productId];
-        $productDiscountYears = $this->discountHelper->getDiscountYears($discountHistory)[$productId];
+        $discountHistory = $this->discountHistoryRepository->findAllByLocationIdAndProducts($this->location->cityId, [$product]);
+        $productDiscountDates = $this->dateHelper->getDiscountDates($year, $discountHistory)[$productId];
+        $productDiscountYears = $this->dateHelper->getDiscountYears($discountHistory)[$productId];
 
         $view = $this->renderView('/product/_partials/history.html.twig', [
             'year' => $year,

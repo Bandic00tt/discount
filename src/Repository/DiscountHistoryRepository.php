@@ -3,7 +3,10 @@
 namespace App\Repository;
 
 use App\Entity\DiscountHistory;
+use App\Trait\QueryHelper;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\NonUniqueResultException;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
@@ -14,9 +17,60 @@ use Doctrine\Persistence\ManagerRegistry;
  */
 class DiscountHistoryRepository extends ServiceEntityRepository
 {
-    public function __construct(ManagerRegistry $registry)
+    use QueryHelper;
+
+    private EntityManagerInterface $em;
+
+    public function __construct(EntityManagerInterface $em, ManagerRegistry $registry)
     {
+        $this->em = $em;
         parent::__construct($registry, DiscountHistory::class);
+    }
+
+    /**
+     * @param int $locationId
+     * @param array $products
+     * @return DiscountHistory[]
+     */
+    public function findAllByLocationIdAndProducts(int $locationId, array $products): array
+    {
+        $productIds = $this->getProductIds($products);
+
+        return $this->em
+            ->createQueryBuilder()
+            ->select(['dh'])
+            ->from(DiscountHistory::class, 'dh')
+            ->andWhere('dh.location_id = :locationId')
+            ->andWhere('dh.product_id in (:productIds)')
+            ->setParameters([
+                'locationId' => $locationId,
+                'productIds' => $productIds,
+            ])
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
+     * @param int $productId
+     * @param string $date
+     * @return DiscountHistory
+     * @throws NonUniqueResultException
+     */
+    public function findByProductIdAndTimeLimit(int $productId, string $date): DiscountHistory
+    {
+        $ts = strtotime($date);
+
+        return $this->em
+            ->createQueryBuilder()
+            ->select(['dh'])
+            ->from(DiscountHistory::class, 'dh')
+            ->where('dh.product_id = :productId and dh.date_begin <= :ts and dh.date_end >= :ts')
+            ->setParameters([
+                'productId' => $productId,
+                'ts' => $ts
+            ])
+            ->getQuery()
+            ->getOneOrNullResult();
     }
 
     // /**

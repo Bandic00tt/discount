@@ -3,14 +3,16 @@ namespace App\Service;
 
 use App\Dto\ProductListViewParams;
 use App\Dto\ProductPaginationViewParams;
+use App\Repository\DiscountRepository;
 use Exception;
+use JetBrains\PhpStorm\Pure;
 
 class ProductList
 {
-    private const PAGINATION_SIZE = 20;
+    public const PAGINATION_SIZE = 20;
 
     public function __construct(
-        private DiscountHelper $discountHelper,
+        private DateHelper $dateHelper,
         private array $products,
         private array $discountHistory
     ) {}
@@ -18,16 +20,16 @@ class ProductList
     /**
      * @throws Exception
      */
-    public function getProductListViewParams(): ProductListViewParams
+    public function getProductListViewParams(DiscountRepository $discountRepository): ProductListViewParams
     {
         $year = date('Y');
 
         $dto = new ProductListViewParams();
         $dto->year = $year;
-        $dto->yearDates = $this->discountHelper->dateHelper->getYearDates($year);
-        $dto->discountDates = $this->discountHelper->getDiscountDates($year, $this->discountHistory);
-        $dto->discountYears = $this->discountHelper->getDiscountYears($this->discountHistory);
-        $dto->activeProductDiscounts = $this->discountHelper->getActiveProductDiscounts($this->products);
+        $dto->yearDates = $this->dateHelper->getYearDates($year);
+        $dto->discountDates = $this->dateHelper->getDiscountDates($year, $this->discountHistory);
+        $dto->discountYears = $this->dateHelper->getDiscountYears($this->discountHistory);
+        $dto->activeProductDiscounts = $discountRepository->findActiveProductDiscounts($this->products);
 
         return $dto;
     }
@@ -37,9 +39,10 @@ class ProductList
      * @param int $totalProducts
      * @return ProductPaginationViewParams
      */
+    #[Pure]
     public function getProductPaginationViewParams(int $page, int $totalProducts): ProductPaginationViewParams
     {
-        $totalPages = ceil($totalProducts / DiscountHelper::MAX_RESULTS);
+        $totalPages = ceil($totalProducts / self::PAGINATION_SIZE);
         $firstPage = 1;
         $lastPage = min($totalPages, self::PAGINATION_SIZE);
 

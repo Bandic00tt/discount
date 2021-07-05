@@ -3,7 +3,9 @@
 namespace App\Repository;
 
 use App\Entity\Discount;
+use App\Trait\QueryHelper;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
@@ -14,9 +16,29 @@ use Doctrine\Persistence\ManagerRegistry;
  */
 class DiscountRepository extends ServiceEntityRepository
 {
-    public function __construct(ManagerRegistry $registry)
+    use QueryHelper;
+
+    private EntityManagerInterface $em;
+
+    public function __construct(EntityManagerInterface $em, ManagerRegistry $registry)
     {
+        $this->em = $em;
         parent::__construct($registry, Discount::class);
+    }
+
+    public function findActiveProductDiscounts(array $products): array
+    {
+        $productIds = $this->getProductIds($products);
+
+        return $this->em
+            ->createQueryBuilder()
+            ->select(['d'])
+            ->from(Discount::class, 'd')
+            ->where('d.product_id in (:productIds)')
+            ->setParameter('productIds', $productIds)
+            ->indexBy('d', 'd.product_id')
+            ->getQuery()
+            ->getResult();
     }
 
     // /**

@@ -174,7 +174,7 @@ class Product
      */
     public function getImgPathLink(): string
     {
-        if ($this->getIsImgLocal() === 0) {
+        if ((int) $this->getIsImgLocal() === 0) {
             return $this->getImgLink();
         }
 

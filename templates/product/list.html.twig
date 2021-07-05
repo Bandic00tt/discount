@@ -77,12 +77,7 @@
                                 <div class="row">
                                     <div class="col">
                                         <small>
-{#                                            {% if 1 %}#}
-                                            {% if productDiscountYears|length > 1 %}
-                                                <a href="{{ path('app_product', {'cityEn': params.cityEn, 'id': product.productId}) }}">{{ product.name }}</a>
-                                            {% else %}
-                                                {{ product.name }}
-                                            {% endif %}
+                                            <a href="{{ path('app_product', {'cityEn': params.cityEn, 'id': product.productId}) }}">{{ product.name }}</a>
                                         </small>
                                     </div>
                                 </div>

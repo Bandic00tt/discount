@@ -3,7 +3,11 @@
 namespace App\Repository;
 
 use App\Entity\Product;
+use App\Service\ProductList;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\NonUniqueResultException;
+use Doctrine\ORM\NoResultException;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
@@ -14,9 +18,67 @@ use Doctrine\Persistence\ManagerRegistry;
  */
 class ProductRepository extends ServiceEntityRepository
 {
-    public function __construct(ManagerRegistry $registry)
+    private EntityManagerInterface $em;
+
+    public function __construct(EntityManagerInterface $em, ManagerRegistry $registry)
     {
+        $this->em = $em;
         parent::__construct($registry, Product::class);
+    }
+
+    /**
+     * @param int $locationId
+     * @param int $page
+     * @param string|null $searchQuery
+     * @return Product[]
+     */
+    public function findListByParams(int $locationId, int $page, ?string $searchQuery): array
+    {
+        $offset = 0;
+        if ($page > 1) {
+            $offset = ($page - 1) * ProductList::PAGINATION_SIZE;
+        }
+
+        $query = $this->em
+            ->createQueryBuilder()
+            ->select(['p'])
+            ->from(Product::class, 'p')
+            ->andWhere('p.location_id = :locationId')
+            ->setParameter('locationId', $locationId);
+
+        if ($searchQuery) {
+            $query->andWhere('p.name like :searchQuery')
+                ->setParameter('searchQuery', '%'. $searchQuery .'%');
+        }
+
+        $query->orderBy('p.updated_at', 'DESC')
+            ->setFirstResult($offset)
+            ->setMaxResults(ProductList::PAGINATION_SIZE);
+
+        return $query->getQuery()->getResult();
+    }
+
+    /**
+     * @param int $locationId
+     * @param string|null $searchQuery
+     * @return int
+     * @throws NoResultException|NonUniqueResultException
+     */
+    public function findTotalByLocationIdAndSearchQuery(int $locationId, ?string $searchQuery): int
+    {
+        $query = $this->em
+            ->createQueryBuilder()
+            ->select(['count(p.id)'])
+            ->from(Product::class, 'p')
+            ->andWhere('p.location_id = :locationId')
+            ->setParameter('locationId', $locationId);
+
+        if ($searchQuery) {
+            $query->andWhere('p.name like :searchQuery')
+                ->setParameter('searchQuery', '%'. $searchQuery .'%');
+        }
+
+        return $query->getQuery()->getSingleScalarResult();
     }
 
     // /**
