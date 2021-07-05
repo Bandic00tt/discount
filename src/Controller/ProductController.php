@@ -2,16 +2,13 @@
 namespace App\Controller;
 
 use App\Dto\Location;
-use App\Entity\Product;
 use App\Repository\DiscountHistoryRepository;
 use App\Repository\DiscountRepository;
 use App\Repository\ProductRepository;
-use App\Service\DateHelper;
 use App\Service\DataHandler;
 use App\Service\ProductItem;
 use App\Service\ProductList;
 use App\ValueObject\Cities;
-use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\NonUniqueResultException;
 use Doctrine\ORM\NoResultException;
 use Exception;
@@ -22,14 +19,16 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
+/**
+ * Class ProductController
+ * @package App\Controller
+ */
 class ProductController extends AbstractController
 {
     /**
      * @throws Exception
      */
     public function __construct(
-        private EntityManagerInterface $em,
-        private DateHelper $dateHelper,
         private Location $location,
         private ProductRepository $productRepository,
         private DiscountHistoryRepository $discountHistoryRepository,
@@ -69,19 +68,13 @@ class ProductController extends AbstractController
         $page = (int) $request->get('page', 1);
         $searchQuery = $request->get('q');
 
-        $products = $this->productRepository
-            ->findListByParams($this->location->cityId, $page, $searchQuery);
-        $discountHistory = $this->discountHistoryRepository
-            ->findAllByLocationIdAndProducts($this->location->cityId, $products);
-        $totalProducts = $this->productRepository
-            ->findTotalByLocationIdAndSearchQuery($this->location->cityId, $searchQuery);
-
-        $productList = new ProductList($this->dateHelper, $products, $discountHistory);
+        $productList = new ProductList($this->location->cityId, $page, $searchQuery);
+        $productList->init($this->productRepository, $this->discountHistoryRepository);
         $productListViewParams = $productList->getProductListViewParams($this->discountRepository);
-        $productPaginationViewParams = $productList->getProductPaginationViewParams($page, $totalProducts);
+        $productPaginationViewParams = $productList->getProductPaginationViewParams();
 
         return $this->render('/product/list.html.twig', [
-            'products' => $products,
+            'products' => $productList->getProducts(),
             'params' => ['cityEn' => $cityEn, 'page' => $page],
             'location' => $this->location,
             'year' => $productListViewParams->year,
@@ -106,19 +99,12 @@ class ProductController extends AbstractController
     {
         $productId = $request->get('id');
 
-        /** @var Product $product */
-        $product = $this->em
-            ->getRepository(Product::class)
-            ->findOneBy(['product_id' => $productId]);
-
-        $discountHistory = $this->discountHistoryRepository
-            ->findAllByLocationIdAndProducts($this->location->cityId, [$product]);
-
-        $productItem = new ProductItem($this->dateHelper, $product, $discountHistory);
+        $productItem = new ProductItem($this->location->cityId, $productId);
+        $productItem->init($this->productRepository, $this->discountHistoryRepository);
         $productItemViewParams = $productItem->getProductItemViewParams($this->discountRepository);
 
         return $this->render('/product/product.html.twig', [
-            'product' => $product,
+            'product' => $productItem->getProduct(),
             'activeDiscounts' => $productItemViewParams->activeDiscounts,
             'discountYears' => $productItemViewParams->discountYears,
             'datesByYears' => $productItemViewParams->datesByYears,
@@ -162,20 +148,13 @@ class ProductController extends AbstractController
         $productId = $request->get('productId');
         $year = $request->get('year');
 
-        /** @var Product $product */
-        $product = $this->em
-            ->getRepository(Product::class)
-            ->findOneBy(['product_id' => $productId]);
-
-        $discountHistory = $this->discountHistoryRepository
-            ->findAllByLocationIdAndProducts($this->location->cityId, [$product]);
-
-        $productItem = new ProductItem($this->dateHelper, $product, $discountHistory);
+        $productItem = new ProductItem($this->location->cityId, $productId);
+        $productItem->init($this->productRepository, $this->discountHistoryRepository);
         $productItemByYearParams = $productItem->getProductItemByYearParams($year);
 
         $view = $this->renderView('/product/_partials/history.html.twig', [
             'year' => $year,
-            'product' => $product,
+            'product' => $productItem->getProduct(),
             'yearDates' => $productItemByYearParams->yearDates,
             'discountDates' => $productItemByYearParams->discountDates,
             'discountYears' => $productItemByYearParams->discountYears,

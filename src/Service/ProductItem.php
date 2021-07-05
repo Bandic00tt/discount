@@ -1,20 +1,42 @@
 <?php
 namespace App\Service;
 
-
 use App\Dto\ProductItemByYearParams;
 use App\Dto\ProductItemViewParams;
 use App\Entity\Product;
+use App\Repository\DiscountHistoryRepository;
 use App\Repository\DiscountRepository;
+use App\Repository\ProductRepository;
 use Exception;
+use JetBrains\PhpStorm\Pure;
 
 class ProductItem
 {
+    private DateHelper $dateHelper;
+    private ?Product $product;
+    private array $discountHistory;
+
+    #[Pure]
     public function __construct(
-        private DateHelper $dateHelper,
-        private Product $product,
-        private array $discountHistory
-    ) {}
+        private int $cityId,
+        private int $productId,
+    ) {
+        $this->dateHelper = new DateHelper();
+    }
+
+    public function init(ProductRepository $productRepository, DiscountHistoryRepository $discountHistoryRepository)
+    {
+        $this->product = $productRepository->findOneBy(['product_id' => $this->productId]);
+        $this->discountHistory = $discountHistoryRepository->findAllByLocationIdAndProducts($this->cityId, [$this->product]);
+    }
+
+    /**
+     * @return Product|null
+     */
+    public function getProduct(): ?Product
+    {
+        return $this->product;
+    }
 
     /**
      * @throws Exception
