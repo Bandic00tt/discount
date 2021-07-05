@@ -69,20 +69,15 @@ class ProductController extends AbstractController
         $page = (int) $request->get('page', 1);
         $searchQuery = $request->get('q');
 
-        // Список товаров для вывода на одной странице
         $products = $this->productRepository
             ->findListByParams($this->location->cityId, $page, $searchQuery);
-        // История скидок по списку товаров
         $discountHistory = $this->discountHistoryRepository
             ->findAllByLocationIdAndProducts($this->location->cityId, $products);
-        // Всего товаров
         $totalProducts = $this->productRepository
             ->findTotalByLocationIdAndSearchQuery($this->location->cityId, $searchQuery);
 
         $productList = new ProductList($this->dateHelper, $products, $discountHistory);
-        // Параметры списка товаров
         $productListViewParams = $productList->getProductListViewParams($this->discountRepository);
-        // Параметры пагинации
         $productPaginationViewParams = $productList->getProductPaginationViewParams($page, $totalProducts);
 
         return $this->render('/product/list.html.twig', [
@@ -102,7 +97,6 @@ class ProductController extends AbstractController
     }
 
     /**
-     * todo: можно убрать product из параметров вьюхи, по контексту и так понятно
      * @Route ("/{cityEn}/product/{id}", name="app_product", methods={"GET"})
      * @param Request $request
      * @return Response
@@ -177,17 +171,14 @@ class ProductController extends AbstractController
             ->findAllByLocationIdAndProducts($this->location->cityId, [$product]);
 
         $productItem = new ProductItem($this->dateHelper, $product, $discountHistory);
-
-        $yearDates = $this->dateHelper->getYearDates($year);
-        $productDiscountDates = $this->dateHelper->getDiscountDates($year, $discountHistory)[$productId];
-        $productDiscountYears = $this->dateHelper->getDiscountYears($discountHistory)[$productId];
+        $productItemByYearParams = $productItem->getProductItemByYearParams($year);
 
         $view = $this->renderView('/product/_partials/history.html.twig', [
             'year' => $year,
-            'yearDates' => $yearDates,
             'product' => $product,
-            'productDiscountDates' => $productDiscountDates,
-            'productDiscountYears' => $productDiscountYears,
+            'yearDates' => $productItemByYearParams->yearDates,
+            'discountDates' => $productItemByYearParams->discountDates,
+            'discountYears' => $productItemByYearParams->discountYears,
         ]);
 
         return $this->json(['html' => $view]);

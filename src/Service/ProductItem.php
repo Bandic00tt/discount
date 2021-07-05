@@ -2,6 +2,7 @@
 namespace App\Service;
 
 
+use App\Dto\ProductItemByYearParams;
 use App\Dto\ProductItemViewParams;
 use App\Entity\Product;
 use App\Repository\DiscountRepository;
@@ -20,7 +21,6 @@ class ProductItem
      */
     public function getProductItemViewParams(DiscountRepository $discountRepository): ProductItemViewParams
     {
-        $activeDiscounts = $discountRepository->findActiveProductDiscounts([$this->product]);
         $discountYears = $this->dateHelper->getDiscountYears($this->discountHistory)[$this->product->getProductId()] ?? [];
         $datesByYears = [];
         $discountDatesByYears = [];
@@ -30,10 +30,23 @@ class ProductItem
         }
 
         $dto = new ProductItemViewParams();
-        $dto->activeDiscounts = $activeDiscounts;
+        $dto->activeDiscounts = $discountRepository->findActiveProductDiscounts([$this->product]);
         $dto->discountYears = $discountYears;
         $dto->datesByYears = $datesByYears;
         $dto->discountDatesByYears = $discountDatesByYears;
+
+        return $dto;
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function getProductItemByYearParams(int $year): ProductItemByYearParams
+    {
+        $dto = new ProductItemByYearParams();
+        $dto->yearDates = $this->dateHelper->getYearDates($year);
+        $dto->discountDates = $this->dateHelper->getDiscountDates($year, $this->discountHistory)[$this->product->getId()];
+        $dto->discountYears = $this->dateHelper->getDiscountYears($this->discountHistory)[$this->product->getId()];
 
         return $dto;
     }
